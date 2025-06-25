@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import { Menu } from 'lucide-react';
 
 const seedVolunteers: Volunteer[] = [
+
   { id: 'seed-1', name: 'Tiago Davila Jaques Da Silva', phone: '51998590784', congregation: 'Sul de sapiranga', city: 'Sapiranga', isTeamLeader: false, imageUrl: '' },
   { id: 'seed-2', name: 'Vitor Rodrigues', phone: '51994666754', congregation: 'Central', city: 'Capão da Canoa', isTeamLeader: false, imageUrl: '' },
   { id: 'seed-3', name: 'Pablo Souza', phone: '51995041242', congregation: 'Ararica', city: 'Ararica', isTeamLeader: false, imageUrl: '' },
@@ -38,25 +39,108 @@ const seedVolunteers: Volunteer[] = [
   { id: 'seed-30', name: 'Gilmar sander', phone: '51998586938', congregation: 'Central', city: 'Campo Bom', isTeamLeader: false, imageUrl: '' },
   { id: 'seed-31', name: 'Valdoni dos Reis', phone: '51995823555', congregation: 'Sul de Sapiranga', city: 'Sapiranga', isTeamLeader: false, imageUrl: '' },
   { id: 'seed-32', name: 'Sergio Volpi', phone: '51995340686', congregation: 'Sul', city: 'Sapiranga', isTeamLeader: false, imageUrl: '' },
+  { id: 'seed-33', name: 'Alessandro Campos', phone: '51999999999', congregation: 'Maquiné', city: 'Maquiné', isTeamLeader: false, imageUrl: '' },  
+  { id: 'seed-34', name: 'Cláudio', phone: '51999999999', congregation: 'Maquiné', city: 'Maquiné', isTeamLeader: false, imageUrl: '' },
+  { id: 'seed-35', name: 'Érico', phone: '51999999999', congregation: 'Central', city: 'Capão da Canoa', isTeamLeader: false, imageUrl: '' },
+  { id: 'seed-36', name: 'Marlison', phone: '51999999999', congregation: 'Central', city: 'Capão da Canoa', isTeamLeader: false, imageUrl: '' },
+  { id: 'seed-37', name: 'Rubervan', phone: '51999999999', congregation: 'Central', city: 'Central', isTeamLeader: false, imageUrl: '' },
+  { id: 'seed-38', name: 'Sexta Manhã - Todos os voluntários', phone: '51999999999', congregation: 'Sexta', city: 'Sexta', isTeamLeader: false, imageUrl: '' },
+  { id: 'seed-39', name: 'Sexta Tarde - Todos os voluntários', phone: '51999999999', congregation: 'Sexta', city: 'Sexta', isTeamLeader: false, imageUrl: '' },
+  { id: 'seed-40', name: 'Sábado Manhã - Todos os voluntários', phone: '51999999999', congregation: 'Sábado', city: 'Sábado', isTeamLeader: false, imageUrl: '' },
+  { id: 'seed-41', name: 'Sábado Tarde - Todos os voluntários', phone: '51999999999', congregation: 'Sábado', city: 'Sábado', isTeamLeader: false, imageUrl: '' },
+  { id: 'seed-42', name: 'Domingo Manhã - Todos os voluntários', phone: '51999999999', congregation: 'Domingo', city: 'Domingo', isTeamLeader: false, imageUrl: '' },
+  { id: 'seed-43', name: 'Domingo Tarde - Todos os voluntários', phone: '51999999999', congregation: 'Domingo', city: 'Domingo', isTeamLeader: false, imageUrl: '' },
+
+
 ];
+
+// Períodos para os dias 27, 28 e 29 de dezembro de 2024
+const seedShifts: Shift[] = [
+  // Dia 27/12/2024 - Manhã Sexta-feira Portaria
+  { id: 'shift-27-manha-portaria-1', date: '2024-12-27', startTime: '07:00', endTime: '09:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-27-manha-portaria-2', date: '2024-12-27', startTime: '09:00', endTime: '10:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-27-manha-portaria-3', date: '2024-12-27', startTime: '10:30', endTime: '12:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-27-manha-portaria-4', date: '2024-12-27', startTime: '12:00', endTime: '13:30', location: 'portaria', requiredVolunteers: 4, periodName: 'Manhã' },
+  // Dia 27/12/2024 - Tarde Sexta-feira Portaria
+  { id: 'shift-27-manha-portaria-5', date: '2024-12-27', startTime: '13:30', endTime: '15:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-27-tarde-portaria-1', date: '2024-12-27', startTime: '15:00', endTime: '16:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
+  { id: 'shift-27-tarde-portaria-2', date: '2024-12-27', startTime: '16:30', endTime: '18:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
+
+  // Dia 27/12/2024 - Manhã Sexta-feira Patio
+  { id: 'shift-27-manha-patio-1', date: '2024-12-27', startTime: '07:00', endTime: '09:00', location: 'patio', requiredVolunteers: 32, periodName: 'Manhã' },
+  { id: 'shift-27-manha-patio-2', date: '2024-12-27', startTime: '09:00', endTime: '10:30', location: 'patio', requiredVolunteers: 3, periodName: 'Manhã' },
+  { id: 'shift-27-manha-patio-3', date: '2024-12-27', startTime: '10:30', endTime: '12:00', location: 'patio', requiredVolunteers: 3, periodName: 'Manhã' },
+  // Dia 27/12/2024 - Tarde Sexta-feira Patio
+  { id: 'shift-27-manha-patio-4', date: '2024-12-27', startTime: '13:00', endTime: '14:30', location: 'patio', requiredVolunteers: 3, periodName: 'Manhã' },
+  { id: 'shift-27-manha-patio-5', date: '2024-12-27', startTime: '14:30', endTime: '16:00', location: 'patio', requiredVolunteers: 3, periodName: 'Manhã' },
+  { id: 'shift-27-tarde-patio-1', date: '2024-12-27', startTime: '16:00', endTime: '17:30', location: 'patio', requiredVolunteers: 3, periodName: 'Tarde' },
+
+
+
+
+
+  // Dia 28/12/2024 - Manhã Sábado Portaria
+  { id: 'shift-28-manha-portaria-1', date: '2024-12-28', startTime: '07:00', endTime: '09:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-28-manha-portaria-2', date: '2024-12-28', startTime: '09:00', endTime: '10:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-28-manha-portaria-3', date: '2024-12-28', startTime: '10:30', endTime: '12:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-28-manha-portaria-4', date: '2024-12-28', startTime: '12:00', endTime: '13:30', location: 'portaria', requiredVolunteers: 4, periodName: 'Manhã' },
+  // Dia 28/12/2024 - Tarde Sábado Portaria
+  { id: 'shift-28-manha-portaria-5', date: '2024-12-28', startTime: '13:30', endTime: '15:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-28-tarde-portaria-1', date: '2024-12-28', startTime: '15:00', endTime: '16:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
+  { id: 'shift-28-tarde-portaria-2', date: '2024-12-28', startTime: '16:30', endTime: '18:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
+
+  // Dia 28/12/2024 - Manhã Sábado Patio
+  { id: 'shift-28-manha-patio-1', date: '2024-12-28', startTime: '07:00', endTime: '09:00', location: 'patio', requiredVolunteers: 32, periodName: 'Manhã' },
+  { id: 'shift-28-manha-patio-2', date: '2024-12-28', startTime: '09:00', endTime: '10:30', location: 'patio', requiredVolunteers: 3, periodName: 'Manhã' },
+  { id: 'shift-28-manha-patio-3', date: '2024-12-28', startTime: '10:30', endTime: '12:00', location: 'patio', requiredVolunteers: 3, periodName: 'Manhã' },
+  // Dia 28/12/2024 - Tarde Sábado Patio
+  { id: 'shift-28-manha-patio-4', date: '2024-12-28', startTime: '13:00', endTime: '14:30', location: 'patio', requiredVolunteers: 3, periodName: 'Tarde' },
+  { id: 'shift-28-manha-patio-5', date: '2024-12-28', startTime: '14:30', endTime: '16:00', location: 'patio', requiredVolunteers: 3, periodName: 'Tarde' },
+  { id: 'shift-28-manha-patio-6', date: '2024-12-28', startTime: '16:00', endTime: '17:30', location: 'patio', requiredVolunteers: 3, periodName: 'Tarde' },
+
+
+
+
+  // Dia 29/12/2024 - Manhã Domingo Portaria
+  { id: 'shift-29-manha-portaria-1', date: '2024-12-29', startTime: '07:00', endTime: '09:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-29-manha-portaria-2', date: '2024-12-29', startTime: '09:00', endTime: '10:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-29-manha-portaria-3', date: '2024-12-29', startTime: '10:30', endTime: '12:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-29-manha-portaria-4', date: '2024-12-29', startTime: '12:00', endTime: '13:30', location: 'portaria', requiredVolunteers: 4, periodName: 'Manhã' },
+  // Dia 29/12/2024 - Tarde Domingo Portaria
+  { id: 'shift-29-manha-portaria-5', date: '2024-12-29', startTime: '13:30', endTime: '15:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
+  { id: 'shift-29-manha-portaria-6', date: '2024-12-29', startTime: '15:00', endTime: '16:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
+  { id: 'shift-29-manha-portaria-7', date: '2024-12-29', startTime: '16:30', endTime: '18:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
+
+
+  // Dia 29/12/2024 - Tarde Domingo Patio
+
+  { id: 'shift-29-manha-patio-1', date: '2024-12-29', startTime: '07:00', endTime: '09:00', location: 'patio', requiredVolunteers: 32, periodName: 'Manhã' },
+  { id: 'shift-29-manha-patio-2', date: '2024-12-29', startTime: '09:00', endTime: '10:30', location: 'patio', requiredVolunteers: 3, periodName: 'Manhã' },
+  { id: 'shift-29-manha-patio-3', date: '2024-12-29', startTime: '10:30', endTime: '12:00', location: 'patio', requiredVolunteers: 3, periodName: 'Manhã' },
+  // Dia 29/12/2024 - Tarde Domingo Patio
+  { id: 'shift-29-manha-patio-4', date: '2024-12-29', startTime: '13:00', endTime: '14:30', location: 'patio', requiredVolunteers: 3, periodName: 'Tarde' },
+  { id: 'shift-29-manha-patio-5', date: '2024-12-29', startTime: '14:30', endTime: '16:00', location: 'patio', requiredVolunteers: 3, periodName: 'Tarde' },
+  { id: 'shift-29-manha-patio-6', date: '2024-12-29', startTime: '16:00', endTime: '17:30', location: 'patio', requiredVolunteers: 3, periodName: 'Tarde' },
+];
+
 
 // Helper para carregar do localStorage
 function loadFromLocalStorage<T>(key: string, defaultValue: T): T {
-    try {
-        const storedValue = localStorage.getItem(key);
-        if (storedValue) {
-            return JSON.parse(storedValue);
-        }
-    } catch (error) {
-        console.error(`Erro ao carregar '${key}' do localStorage`, error);
+  try {
+    const storedValue = localStorage.getItem(key);
+    if (storedValue) {
+      return JSON.parse(storedValue);
     }
-    return defaultValue;
+  } catch (error) {
+    console.error(`Erro ao carregar '${key}' do localStorage`, error);
+  }
+  return defaultValue;
 }
 
 export function Root() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [volunteers, setVolunteers] = useState<Volunteer[]>(() => loadFromLocalStorage('volunteers', seedVolunteers));
-  const [shifts, setShifts] = useState<Shift[]>(() => loadFromLocalStorage('shifts', []));
+  const [shifts, setShifts] = useState<Shift[]>(() => loadFromLocalStorage('shifts', seedShifts));
   const [captains, setCaptains] = useState<Captain[]>(() => loadFromLocalStorage('captains', []));
   const [allocations, setAllocations] = useState<Record<string, string[]>>(() => loadFromLocalStorage('allocations', {}));
 
@@ -87,6 +171,16 @@ export function Root() {
 
   const handleDeleteVolunteer = (id: string) => {
     setVolunteers((prev) => prev.filter((v) => v.id !== id));
+  };
+
+  const handleToggleLeader = (id: string) => {
+    setVolunteers((prev) =>
+      prev.map((volunteer) =>
+        volunteer.id === id
+          ? { ...volunteer, isTeamLeader: !volunteer.isTeamLeader }
+          : volunteer
+      )
+    );
   };
 
   const handleAddShift = (shiftData: Omit<Shift, 'id'>) => {
@@ -121,13 +215,13 @@ export function Root() {
       </aside>
       <div className="md:hidden fixed top-4 left-4 z-30">
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-            <Menu className="h-6 w-6" />
+          <Menu className="h-6 w-6" />
         </button>
       </div>
       {isSidebarOpen && <div className="md:hidden fixed inset-0 bg-black opacity-50 z-10" onClick={() => setIsSidebarOpen(false)}></div>}
       <main className="flex-1 p-8 md:ml-0">
-        <Outlet context={{ 
-          volunteers, handleAddVolunteer, handleDeleteVolunteer, setVolunteers,
+        <Outlet context={{
+          volunteers, handleAddVolunteer, handleDeleteVolunteer, handleToggleLeader, setVolunteers,
           shifts, handleAddShift, handleDeleteShift, setShifts, handleAddMultipleShifts,
           captains, setCaptains,
           allocations, setAllocations

@@ -1,6 +1,6 @@
 import { useOutletContext } from "react-router-dom";
 import type { Volunteer, Shift } from "../types";
-import { DndContext, type DragEndEvent } from "@dnd-kit/core";
+import { DndContext, type DragEndEvent, DragOverlay, type DragStartEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { useState } from "react";
 import { VolunteerDraggable } from "../components/VolunteerDraggable";
@@ -9,7 +9,7 @@ import { SortableShiftItem } from "../components/SortableShiftItem";
 import toast from 'react-hot-toast';
 import { format } from 'date-fns-tz';
 import { ptBR } from 'date-fns/locale';
-import { Star } from 'lucide-react';
+import { Star, X } from 'lucide-react';
 
 // Contexto completo vindo do Root
 type AllocationContext = {
@@ -44,6 +44,7 @@ export function Allocation() {
   const [activeTab, setActiveTab] = useState<'portaria' | 'patio'>('portaria');
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [periodFilter, setPeriodFilter] = useState<'all' | 'Manhã' | 'Tarde'>('all');
+  const [activeVolunteer, setActiveVolunteer] = useState<Volunteer | null>(null);
 
   const handleAutoAllocate = () => {
     console.log("Iniciando distribuição automática...");
@@ -99,9 +100,11 @@ export function Allocation() {
     console.log("Distribuição automática concluída!", newAllocations);
   };
 
-  const findShiftOfVolunteer = (volunteerId: string, currentAllocations: Record<string, string[]>) => {
-    return Object.keys(currentAllocations).find(shiftId => currentAllocations[shiftId].includes(volunteerId));
-  }
+  const handleDragStart = (event: DragStartEvent) => {
+    const volunteerId = String(event.active.id);
+    const volunteer = volunteers.find(v => v.id === volunteerId);
+    setActiveVolunteer(volunteer || null);
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { over, active } = event;
@@ -168,10 +171,33 @@ export function Allocation() {
 
       return newAllocations;
     });
+    
+    setActiveVolunteer(null);
   };
 
+  const handleDragCancel = () => {
+    setActiveVolunteer(null);
+  };
+
+  const findShiftOfVolunteer = (volunteerId: string, currentAllocations: Record<string, string[]>) => {
+    return Object.keys(currentAllocations).find(shiftId => currentAllocations[shiftId].includes(volunteerId));
+  }
+
   const allocatedVolunteerIds = new Set(Object.values(allocations).flat());
-  const availableVolunteers = volunteers.filter(v => !allocatedVolunteerIds.has(v.id));
+  const availableVolunteers = volunteers; // Mostrar todos os voluntários sempre
+
+  // Função para calcular uso de cada voluntário
+  const getVolunteerUsage = (volunteerId: string) => {
+    const usedShifts = Object.entries(allocations)
+      .filter(([_, volunteerIds]) => volunteerIds.includes(volunteerId))
+      .map(([shiftId, _]) => shifts.find(s => s.id === shiftId))
+      .filter((shift): shift is Shift => shift !== undefined);
+    
+    return {
+      count: usedShifts.length,
+      shifts: usedShifts
+    };
+  };
 
   const uniqueDates = [...new Set(shifts.map(s => s.date))].sort((a,b) => new Date(a).getTime() - new Date(b).getTime());
 
@@ -185,18 +211,7 @@ export function Allocation() {
   const handleClearFilters = () => {
     setDateFilter('all');
     setPeriodFilter('all');
-  }
-
-  const getHumanReadableDate = (dateString: string) => {
-    // Adiciona T00:00:00 para evitar problemas com fuso horário na interpretação da data
-    const date = new Date(`${dateString}T00:00:00`);
-    const formattedDate = format(date, "EEEE, dd 'de' MMMM 'de' yyyy", { 
-        locale: ptBR,
-        timeZone: 'America/Sao_Paulo' // Força um fuso para consistência
-    });
-    // Capitaliza a primeira letra do dia da semana e do mês
-    return formattedDate.replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-  }
+  } 
 
   const getHumanReadableShiftTitle = (shift: Shift) => {
     const date = new Date(`${shift.date}T00:00:00`);
@@ -210,7 +225,7 @@ export function Allocation() {
   }
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart} onDragCancel={handleDragCancel}>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Alocação de Voluntários</h1>
         <button
@@ -227,19 +242,40 @@ export function Allocation() {
         <ShiftDroppable id="available-volunteers">
             <div className="md:col-span-1 p-4 bg-gray-100 rounded-lg h-fit">
             <h2 className="text-xl font-semibold mb-4 text-center">Voluntários Disponíveis</h2>
-            <div className="space-y-2">
-              {availableVolunteers.map(volunteer => (
-                <VolunteerDraggable key={volunteer.id} id={volunteer.id}>
-                  <div className="p-2 bg-white rounded shadow cursor-grab flex items-center gap-3">
-                    <Avatar volunteer={volunteer} />
-                    <div>
-                        <p className="font-medium">{volunteer.name}</p>
-                        <p className="text-sm text-gray-600">{volunteer.congregation}</p>
+            <div className="space-y-2 max-h-[600px] overflow-y-auto scroll-smooth-drag drag-container">
+              {availableVolunteers.map(volunteer => {
+                const usage = getVolunteerUsage(volunteer.id);
+                return (
+                  <VolunteerDraggable key={volunteer.id} id={volunteer.id}>
+                    <div className="p-3 bg-white rounded shadow cursor-grab">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Avatar volunteer={volunteer} />
+                        <div className="flex-1">
+                          <p className="font-medium">{volunteer.name}</p>
+                          <p className="text-xs text-gray-600">{volunteer.congregation}</p>
+                        </div>
+                        {usage.count > 0 && (
+                          <div className="text-right">
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                              {usage.count}x usado
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      {usage.count > 0 && (
+                        <div className="text-xs text-gray-500 border-t pt-2">
+                          <p className="font-medium mb-1">Turnos alocados:</p>
+                          {usage.shifts.map((shift, index) => (
+                            <div key={index} className="mb-1">
+                              • {format(new Date(`${shift.date}T00:00:00`), "dd/MM", { locale: ptBR })} - {shift.location} ({shift.startTime}-{shift.endTime})
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </VolunteerDraggable>
-              ))}
-              {availableVolunteers.length === 0 && volunteers.length > 0 && <p className="text-center text-gray-500">Todos os voluntários foram alocados.</p>}
+                  </VolunteerDraggable>
+                );
+              })}
               {volunteers.length === 0 && <p className="text-center text-gray-500">Nenhum voluntário cadastrado.</p>}
             </div>
             </div>
@@ -292,7 +328,7 @@ export function Allocation() {
           </div>
 
           <SortableContext items={filteredShifts.map(s => s.id)}>
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto max-h-[600px] scroll-smooth-drag drag-container">
               {filteredShifts.map(shift => (
                 <SortableShiftItem key={shift.id} id={shift.id}>
                     <ShiftDroppable id={shift.id}>
@@ -306,7 +342,7 @@ export function Allocation() {
                                 <VolunteerDraggable key={volunteer.id} id={volunteer.id}>
                                   <div className="p-2 bg-blue-100 rounded text-sm cursor-grab flex items-center gap-2">
                                     <Avatar volunteer={volunteer} />
-                                    <span>{volunteer.name}</span>
+                                    <span className="flex-1">{volunteer.name}</span>
                                     {volunteer.isTeamLeader && <span title="Líder de Equipe"><Star size={14} className="text-yellow-500" /></span>}
                                   </div>
                                 </VolunteerDraggable>
@@ -322,6 +358,20 @@ export function Allocation() {
           </SortableContext>
         </div>
       </div>
+      
+      <DragOverlay>
+        {activeVolunteer ? (
+          <div className="p-3 bg-white rounded shadow cursor-grab border-2 border-blue-500 opacity-90">
+            <div className="flex items-center gap-3">
+              <Avatar volunteer={activeVolunteer} />
+              <div>
+                <p className="font-medium">{activeVolunteer.name}</p>
+                <p className="text-xs text-gray-600">{activeVolunteer.congregation}</p>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </DragOverlay>
     </DndContext>
   )
 } 

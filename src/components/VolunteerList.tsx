@@ -4,6 +4,7 @@ import { Trash2, Star } from "lucide-react";
 interface VolunteerListProps {
     volunteers: Volunteer[];
     onDeleteVolunteer: (id: string) => void;
+    onToggleLeader: (id: string) => void;
 }
 
 const Avatar = ({ volunteer }: { volunteer: Volunteer }) => {
@@ -24,7 +25,7 @@ const Avatar = ({ volunteer }: { volunteer: Volunteer }) => {
     )
 }
 
-export function VolunteerList({ volunteers, onDeleteVolunteer }: VolunteerListProps) {
+export function VolunteerList({ volunteers, onDeleteVolunteer, onToggleLeader }: VolunteerListProps) {
     if (volunteers.length === 0) {
         return <p className="text-center text-gray-500 mt-8">Nenhum voluntário cadastrado ainda.</p>;
     }
@@ -39,6 +40,7 @@ export function VolunteerList({ volunteers, onDeleteVolunteer }: VolunteerListPr
                         <th className="py-3 px-4 text-left">Telefone</th>
                         <th className="py-3 px-4 text-left">Congregação</th>
                         <th className="py-3 px-4 text-left">Cidade</th>
+                        <th className="py-3 px-4 text-center">Líder</th>
                         <th className="py-3 px-4 text-center">Ações</th>
                     </tr>
                 </thead>
@@ -61,6 +63,15 @@ export function VolunteerList({ volunteers, onDeleteVolunteer }: VolunteerListPr
                             <td className="py-3 px-4">{volunteer.phone}</td>
                             <td className="py-3 px-4">{volunteer.congregation}</td>
                             <td className="py-3 px-4">{volunteer.city}</td>
+                            <td className="py-3 px-4 text-center">
+                                <input
+                                    type="checkbox"
+                                    checked={volunteer.isTeamLeader || false}
+                                    onChange={() => onToggleLeader(volunteer.id)}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                                    title="Marcar como líder"
+                                />
+                            </td>
                             <td className="py-3 px-4 text-center">
                                 <button
                                     onClick={() => onDeleteVolunteer(volunteer.id)}

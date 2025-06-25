@@ -1,1 +1,52 @@
 @import "tailwindcss";
+
+/* Estilos customizados para scroll suave */
+.scroll-smooth-drag {
+  scroll-behavior: smooth;
+}
+
+.scroll-smooth-drag::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-smooth-drag::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.scroll-smooth-drag::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 3px;
+}
+
+.scroll-smooth-drag::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Melhorar o drag and drop em áreas com scroll */
+.drag-container {
+  position: relative;
+}
+
+.drag-container:hover {
+  scroll-behavior: auto;
+}
+
+/* Garantir que elementos arrastados fiquem na frente */
+[data-rnd-drag-handle] {
+  z-index: 1000 !important;
+}
+
+.react-draggable-dragging {
+  z-index: 1000 !important;
+}
+
+/* Estilos para elementos sendo arrastados no dnd-kit */
+.dndkit-dragging {
+  z-index: 1000 !important;
+}
+
+/* Overlay de drag do dnd-kit */
+.dnd-overlay {
+  z-index: 1000 !important;
+}

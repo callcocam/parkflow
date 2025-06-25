@@ -34,3 +34,18 @@ Aqui vamos acompanhar o progresso do desenvolvimento, marcando as tarefas como p
 - ✅ Pré-cadastro de ~30 voluntários para facilitar o início.
 - ⏳ Features de PWA (Progressive Web App).
 - ⏳ Suporte para modo offline.
+
+### Fase 5: Configuração de Períodos (Concluída)
+- ✅ Criação de períodos para os dias 27, 28 e 29 de dezembro de 2024.
+- ✅ Configuração de turnos de manhã (07:00-12:00) e tarde (13:00-18:00).
+- ✅ Períodos criados para ambas as localidades (Portaria e Pátio).
+- ✅ Configuração especial de voluntários por turno:
+  - **Primeiro turno (07:00-08:00)**: 32 voluntários (todos disponíveis)
+  - **Último turno (17:00-18:00)**: 32 voluntários (todos disponíveis)
+  - **Turnos intermediários**: 3 voluntários por turno
+- ✅ Total de 60 turnos criados (3 dias × 2 períodos × 2 locais × 5 turnos/período).
+- ✅ Adicionada coluna "Líder" na lista de voluntários com checkbox para marcar/desmarcar líderes.
+- ✅ Funcionalidade de toggle para alternar status de líder diretamente na interface.
+- ✅ Implementada barra de rolagem na seção "Voluntários Disponíveis" da página de alocação para melhor navegação.
+- ✅ Adicionado botão de remoção (X) nos voluntários alocados nos turnos com efeito hover e confirmação visual.
+- ✅ Exportação PDF compacta dos voluntários na página de Voluntários para compartilhamento no WhatsApp.
