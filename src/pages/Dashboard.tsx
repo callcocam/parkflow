@@ -1,11 +1,10 @@
 import { useOutletContext } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import type { Volunteer, Shift, Captain } from "../types";
 import { format, isAfter, startOfToday, addDays, isBefore } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Download, Upload, Cloud, Wifi, WifiOff, Settings, RefreshCw } from 'lucide-react';
+import { Download, Upload, Cloud, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { FirebaseConfig } from '../components/FirebaseConfig';
 
 type DashboardContext = {
     volunteers: Volunteer[];
@@ -19,9 +18,7 @@ type DashboardContext = {
     lastSyncTime: string | null;
     exportData: () => Promise<any>;
     importData: (data: any) => Promise<void>;
-    configureSync: (config: any) => Promise<boolean>;
-    forceSyncToCloud: () => Promise<void>;
-    resetSyncConfig: () => void;
+
 }
 
 const StatCard = ({ title, value, description }: { title: string, value: string | number, description: string }) => (
@@ -43,14 +40,10 @@ export function Dashboard() {
         isSyncing,
         lastSyncTime,
         exportData, 
-        importData,
-        configureSync,
-        forceSyncToCloud,
-        resetSyncConfig
+        importData
     } = useOutletContext<DashboardContext>();
     
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [showFirebaseConfig, setShowFirebaseConfig] = useState(false);
 
     // Função para exportar dados para JSON usando IndexedDB
     const exportToJSON = async () => {
@@ -234,39 +227,12 @@ export function Dashboard() {
                             )}
                         </div>
                         
-                        <div className="flex gap-2">
-                            {isFirebaseConfigured ? (
-                                <>
-                                    <button
-                                        onClick={forceSyncToCloud}
-                                        disabled={isSyncing}
-                                        className="bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
-                                    >
-                                        <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                                        {isSyncing ? 'Sincronizando...' : 'Forçar Sync'}
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            if (window.confirm('🔧 Deseja remover a configuração de sincronização?\n\nOS DADOS LOCAIS NÃO SERÃO PERDIDOS.')) {
-                                                resetSyncConfig();
-                                            }
-                                        }}
-                                        className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
-                                    >
-                                        <Settings className="h-4 w-4" />
-                                        Reconfigurar
-                                    </button>
-                                </>
-                            ) : (
-                                <button
-                                    onClick={() => setShowFirebaseConfig(true)}
-                                    className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
-                                >
-                                    <Cloud className="h-4 w-4" />
-                                    Configurar Sincronização
-                                </button>
-                            )}
-                        </div>
+                        {isSyncing && (
+                            <div className="flex items-center gap-2 text-sm text-orange-600">
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                                Sincronizando...
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -357,14 +323,7 @@ export function Dashboard() {
                     )}
                 </div>
             </div>
-            
-            {/* Modal de configuração Firebase */}
-            <FirebaseConfig
-                isOpen={showFirebaseConfig}
-                onClose={() => setShowFirebaseConfig(false)}
-                onConfigure={configureSync}
-                isLoading={isSyncing}
-            />
+
         </div>
     )
 } 

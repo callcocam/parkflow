@@ -5,23 +5,23 @@ import {
   setDoc, 
   getDoc, 
   onSnapshot, 
-  serverTimestamp,
-  Firestore
+  serverTimestamp
 } from 'firebase/firestore';
 
-// Configuração Firebase - será preenchida pelo usuário
-let firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+// Configuração Firebase - preencha com suas credenciais
+const firebaseConfig = {
+  apiKey: "AIzaSyA6M5DTgimgrADrw0W2MchhQDg85NcyAcU",
+  authDomain: "parkflow-df0ee.firebaseapp.com", 
+  projectId: "parkflow-df0ee",
+  storageBucket: "parkflow-df0ee.firebasestorage.app",
+  messagingSenderId: "569800792139",
+  appId: "1:569800792139:web:15ab158f72681324d4d5ce"
 };
 
-let app: any = null;
-let db: Firestore | null = null;
-let isConfigured = false;
+// Inicializar Firebase automaticamente
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const isConfigured = true;
 
 // Interface para os dados sincronizados
 export interface SyncData {
@@ -34,39 +34,6 @@ export interface SyncData {
   deviceId?: string;
   syncTimestamp?: number;
 }
-
-// Configurar Firebase
-export const configureFirebase = (config: typeof firebaseConfig) => {
-  try {
-    firebaseConfig = config;
-    app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    isConfigured = true;
-    
-    // Salvar configuração no localStorage
-    localStorage.setItem('firebase_config', JSON.stringify(config));
-    
-    console.log('🔥 Firebase configurado com sucesso!');
-    return true;
-  } catch (error) {
-    console.error('❌ Erro ao configurar Firebase:', error);
-    return false;
-  }
-};
-
-// Carregar configuração salva
-export const loadFirebaseConfig = () => {
-  try {
-    const savedConfig = localStorage.getItem('firebase_config');
-    if (savedConfig) {
-      const config = JSON.parse(savedConfig);
-      return configureFirebase(config);
-    }
-  } catch (error) {
-    console.error('Erro ao carregar configuração Firebase:', error);
-  }
-  return false;
-};
 
 // Verificar se Firebase está configurado
 export const isFirebaseConfigured = () => isConfigured;
@@ -130,13 +97,7 @@ export const subscribeToChanges = (callback: (data: SyncData) => void) => {
   });
 };
 
-// Resetar configuração
-export const resetFirebaseConfig = () => {
-  isConfigured = false;
-  app = null;
-  db = null;
-  localStorage.removeItem('firebase_config');
-};
+// Firebase já configurado automaticamente - não precisa resetar
 
 // Gerar ID único do dispositivo
 export const getDeviceId = () => {

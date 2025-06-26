@@ -171,10 +171,7 @@ export function Root() {
     addShift: dbAddShift,
     deleteShift: dbDeleteShift,
     exportData,
-    importData,
-    configureSync,
-    forceSyncToCloud,
-    resetSyncConfig
+    importData
   } = useIndexedDB({
     volunteers: seedVolunteers,
     shifts: seedShifts,
@@ -282,9 +279,6 @@ export function Root() {
           lastSyncTime,
           exportData,
           importData,
-          configureSync,
-          forceSyncToCloud,
-          resetSyncConfig,
           handleAddMultipleShifts: async (shiftsToAdd: Shift[]) => {
             const shiftsWithIds = shiftsToAdd.map(shift => ({
               ...shift,

@@ -3,13 +3,11 @@ import { parkFlowDB, LocalStorageFallback, ParkFlowDB } from '../lib/indexeddb';
 import type { Volunteer, Shift, Captain } from '../types';
 import toast from 'react-hot-toast';
 import { 
-  configureFirebase, 
-  loadFirebaseConfig, 
+  isFirebaseConfigured,
   saveToFirestore,
   loadFromFirestore,
   subscribeToChanges,
   getDeviceId,
-  resetFirebaseConfig,
   type SyncData
 } from '../lib/firebase';
 
@@ -45,10 +43,7 @@ interface UseIndexedDBReturn {
   exportData: () => Promise<any>;
   importData: (data: any) => Promise<void>;
   
-  // Sincronização Firebase
-  configureSync: (firebaseConfig: any) => Promise<boolean>;
-  forceSyncToCloud: () => Promise<void>;
-  resetSyncConfig: () => void;
+
 }
 
 export function useIndexedDB(seedData?: {
@@ -202,8 +197,8 @@ export function useIndexedDB(seedData?: {
   // === FIREBASE SYNC ===
   const initializeFirebase = async () => {
     try {
-      // Tentar carregar configuração salva
-      const configured = loadFirebaseConfig();
+      // Firebase já configurado automaticamente no código
+      const configured = isFirebaseConfigured();
       setIsFirebaseConfiguredState(configured);
       
       if (configured) {
@@ -483,54 +478,7 @@ export function useIndexedDB(seedData?: {
     }
   };
 
-  // === MÉTODOS DE SINCRONIZAÇÃO ===
-  const configureSync = async (firebaseConfig: any): Promise<boolean> => {
-    try {
-      const success = configureFirebase(firebaseConfig);
-      if (success) {
-        setIsFirebaseConfiguredState(true);
-        // Sincronizar dados iniciais
-        await syncFromCloud();
-        // Configurar listener
-        setupRealtimeSync();
-        toast.success('🔥 Sincronização configurada!');
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Erro ao configurar sincronização:', error);
-      toast.error('Erro ao configurar Firebase');
-      return false;
-    }
-  };
 
-  const forceSyncToCloud = async () => {
-    if (!isFirebaseConfiguredState) {
-      toast.error('Firebase não configurado');
-      return;
-    }
-    
-    setIsSyncing(true);
-    try {
-      await syncToCloud();
-      toast.success('📤 Dados enviados para nuvem!');
-    } catch (error) {
-      console.error('Erro ao forçar sincronização:', error);
-      toast.error('Erro ao sincronizar');
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const resetSyncConfig = () => {
-    if (unsubscribeRef.current) {
-      unsubscribeRef.current();
-    }
-    setIsFirebaseConfiguredState(false);
-    setLastSyncTime(null);
-    resetFirebaseConfig();
-    toast.success('🔧 Configuração de sincronização removida');
-  };
 
   return {
     // Estados
@@ -562,11 +510,6 @@ export function useIndexedDB(seedData?: {
     
     // Backup/Restore
     exportData,
-    importData,
-    
-    // Sincronização Firebase
-    configureSync,
-    forceSyncToCloud,
-    resetSyncConfig
+    importData
   };
 } 
