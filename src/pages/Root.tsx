@@ -158,6 +158,9 @@ export function Root() {
     isLoading,
     isReady,
     usingFallback,
+    isFirebaseConfigured,
+    isSyncing,
+    lastSyncTime,
     setVolunteers,
     setShifts,
     setAllocations,
@@ -166,7 +169,12 @@ export function Root() {
     updateVolunteer: dbUpdateVolunteer,
     deleteVolunteer: dbDeleteVolunteer,
     addShift: dbAddShift,
-    deleteShift: dbDeleteShift
+    deleteShift: dbDeleteShift,
+    exportData,
+    importData,
+    configureSync,
+    forceSyncToCloud,
+    resetSyncConfig
   } = useIndexedDB({
     volunteers: seedVolunteers,
     shifts: seedShifts,
@@ -269,35 +277,14 @@ export function Root() {
           allocations, setAllocations,
           isReady, 
           usingFallback,
-          exportData: async () => {
-            try {
-              return {
-                volunteers,
-                shifts,
-                allocations,
-                captains,
-                exportDate: new Date().toISOString(),
-                version: "2.0-indexeddb"
-              };
-            } catch (error) {
-              console.error('Erro ao exportar dados:', error);
-              throw error;
-            }
-          },
-          importData: async (data: any) => {
-            try {
-              if (!data.volunteers || !data.shifts || !data.allocations) {
-                throw new Error('Estrutura de dados inválida');
-              }
-              await setVolunteers(data.volunteers);
-              await setShifts(data.shifts);
-              await setAllocations(data.allocations);
-              await setCaptains(data.captains || []);
-            } catch (error) {
-              console.error('Erro ao importar dados:', error);
-              throw error;
-            }
-          },
+          isFirebaseConfigured,
+          isSyncing,
+          lastSyncTime,
+          exportData,
+          importData,
+          configureSync,
+          forceSyncToCloud,
+          resetSyncConfig,
           handleAddMultipleShifts: async (shiftsToAdd: Shift[]) => {
             const shiftsWithIds = shiftsToAdd.map(shift => ({
               ...shift,

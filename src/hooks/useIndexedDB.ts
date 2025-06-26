@@ -1,7 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { parkFlowDB, LocalStorageFallback, ParkFlowDB } from '../lib/indexeddb';
 import type { Volunteer, Shift, Captain } from '../types';
 import toast from 'react-hot-toast';
+import { 
+  configureFirebase, 
+  loadFirebaseConfig, 
+  saveToFirestore,
+  loadFromFirestore,
+  subscribeToChanges,
+  getDeviceId,
+  resetFirebaseConfig,
+  type SyncData
+} from '../lib/firebase';
 
 interface UseIndexedDBReturn {
   // Estados
@@ -14,6 +24,9 @@ interface UseIndexedDBReturn {
   isLoading: boolean;
   isReady: boolean;
   usingFallback: boolean;
+  isFirebaseConfigured: boolean;
+  isSyncing: boolean;
+  lastSyncTime: string | null;
   
   // Setters
   setVolunteers: (volunteers: Volunteer[]) => Promise<void>;
@@ -31,6 +44,11 @@ interface UseIndexedDBReturn {
   // Backup/Restore
   exportData: () => Promise<any>;
   importData: (data: any) => Promise<void>;
+  
+  // Sincronização Firebase
+  configureSync: (firebaseConfig: any) => Promise<boolean>;
+  forceSyncToCloud: () => Promise<void>;
+  resetSyncConfig: () => void;
 }
 
 export function useIndexedDB(seedData?: {
@@ -49,10 +67,30 @@ export function useIndexedDB(seedData?: {
   const [isLoading, setIsLoading] = useState(true);
   const [isReady, setIsReady] = useState(false);
   const [usingFallback, setUsingFallback] = useState(false);
+  
+  // Estados de sincronização Firebase
+  const [isFirebaseConfiguredState, setIsFirebaseConfiguredState] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+  
+  // Referências para controle de sincronização
+  const unsubscribeRef = useRef<(() => void) | null>(null);
+  const deviceId = useRef(getDeviceId());
+  const lastSyncTimestamp = useRef<number>(0);
 
   // Inicialização
   useEffect(() => {
     initializeDatabase();
+    initializeFirebase();
+  }, []);
+
+  // Cleanup na desmontagem
+  useEffect(() => {
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+    };
   }, []);
 
   const initializeDatabase = async () => {
@@ -161,6 +199,116 @@ export function useIndexedDB(seedData?: {
     }
   };
 
+  // === FIREBASE SYNC ===
+  const initializeFirebase = async () => {
+    try {
+      // Tentar carregar configuração salva
+      const configured = loadFirebaseConfig();
+      setIsFirebaseConfiguredState(configured);
+      
+      if (configured) {
+        console.log('🔥 Firebase configurado automaticamente');
+        // Tentar sincronizar dados da nuvem
+        await syncFromCloud();
+        // Configurar listener para mudanças
+        setupRealtimeSync();
+      }
+    } catch (error) {
+      console.error('Erro ao inicializar Firebase:', error);
+    }
+  };
+
+  const syncFromCloud = async () => {
+    if (!isFirebaseConfiguredState) return;
+    
+    try {
+      setIsSyncing(true);
+      const cloudData = await loadFromFirestore();
+      
+             if (cloudData && (cloudData.syncTimestamp || 0) > lastSyncTimestamp.current) {
+        console.log('📥 Sincronizando dados da nuvem');
+        
+        // Atualizar estados locais
+        setVolunteersState(cloudData.volunteers);
+        setShiftsState(cloudData.shifts);  
+        setAllocationsState(cloudData.allocations);
+        setCaptainsState(cloudData.captains);
+        
+        // Salvar localmente
+        if (!usingFallback) {
+          await parkFlowDB.saveVolunteers(cloudData.volunteers);
+          await parkFlowDB.saveShifts(cloudData.shifts);
+          await parkFlowDB.saveAllocations(cloudData.allocations);
+          await parkFlowDB.saveCaptains(cloudData.captains);
+        } else {
+          LocalStorageFallback.saveVolunteers(cloudData.volunteers);
+          LocalStorageFallback.saveShifts(cloudData.shifts);
+          LocalStorageFallback.saveAllocations(cloudData.allocations);
+          LocalStorageFallback.saveCaptains(cloudData.captains);
+        }
+        
+        lastSyncTimestamp.current = cloudData.syncTimestamp || Date.now();
+        setLastSyncTime(new Date().toLocaleString('pt-BR'));
+        toast.success('📥 Dados sincronizados da nuvem!');
+      }
+    } catch (error) {
+      console.error('Erro ao sincronizar da nuvem:', error);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const syncToCloud = async () => {
+    if (!isFirebaseConfiguredState) return;
+    
+    try {
+      const syncData: SyncData = {
+        volunteers,
+        shifts,
+        allocations,
+        captains,
+        lastUpdated: new Date().toISOString(), 
+        version: '2.0-firebase-sync'
+      };
+      
+      const success = await saveToFirestore(syncData, deviceId.current);
+      if (success) {
+        setLastSyncTime(new Date().toLocaleString('pt-BR'));
+        console.log('📤 Dados sincronizados para nuvem');
+      }
+    } catch (error) {
+      console.error('Erro ao sincronizar para nuvem:', error);
+    }
+  };
+
+  const setupRealtimeSync = () => {
+    if (!isFirebaseConfiguredState) return;
+    
+    // Limpar listener anterior se existir
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+    }
+    
+    unsubscribeRef.current = subscribeToChanges((cloudData) => {
+      // Verificar se mudança não veio deste dispositivo
+             if (cloudData.deviceId !== deviceId.current && 
+           (cloudData.syncTimestamp || 0) > lastSyncTimestamp.current) {
+        console.log('🔄 Mudanças detectadas de outro dispositivo');
+        
+        // Atualizar dados locais
+        setVolunteersState(cloudData.volunteers);
+        setShiftsState(cloudData.shifts);
+        setAllocationsState(cloudData.allocations);
+        setCaptainsState(cloudData.captains);
+        
+        lastSyncTimestamp.current = cloudData.syncTimestamp || Date.now();
+        setLastSyncTime(new Date().toLocaleString('pt-BR'));
+        
+        toast.success('🔄 Dados atualizados de outro dispositivo!');
+      }
+    });
+  };
+
   // === SETTERS ===
   const setVolunteers = async (newVolunteers: Volunteer[]) => {
     setVolunteersState(newVolunteers);
@@ -174,6 +322,11 @@ export function useIndexedDB(seedData?: {
         console.error('Erro ao salvar voluntários:', error);
         toast.error('Erro ao salvar dados dos voluntários');
       }
+    }
+    
+    // Sincronizar com Firebase se configurado
+    if (isFirebaseConfiguredState) {
+      setTimeout(() => syncToCloud(), 1000); // Debounce
     }
   };
 
@@ -190,6 +343,11 @@ export function useIndexedDB(seedData?: {
         toast.error('Erro ao salvar dados dos turnos');
       }
     }
+    
+    // Sincronizar com Firebase se configurado
+    if (isFirebaseConfiguredState) {
+      setTimeout(() => syncToCloud(), 1000); // Debounce
+    }
   };
 
   const setAllocations = async (newAllocations: Record<string, string[]>) => {
@@ -205,6 +363,11 @@ export function useIndexedDB(seedData?: {
         toast.error('Erro ao salvar dados das alocações');
       }
     }
+    
+    // Sincronizar com Firebase se configurado
+    if (isFirebaseConfiguredState) {
+      setTimeout(() => syncToCloud(), 1000); // Debounce
+    }
   };
 
   const setCaptains = async (newCaptains: Captain[]) => {
@@ -219,6 +382,11 @@ export function useIndexedDB(seedData?: {
         console.error('Erro ao salvar capitães:', error);
         toast.error('Erro ao salvar dados dos capitães');
       }
+    }
+    
+    // Sincronizar com Firebase se configurado
+    if (isFirebaseConfiguredState) {
+      setTimeout(() => syncToCloud(), 1000); // Debounce
     }
   };
 
@@ -315,6 +483,55 @@ export function useIndexedDB(seedData?: {
     }
   };
 
+  // === MÉTODOS DE SINCRONIZAÇÃO ===
+  const configureSync = async (firebaseConfig: any): Promise<boolean> => {
+    try {
+      const success = configureFirebase(firebaseConfig);
+      if (success) {
+        setIsFirebaseConfiguredState(true);
+        // Sincronizar dados iniciais
+        await syncFromCloud();
+        // Configurar listener
+        setupRealtimeSync();
+        toast.success('🔥 Sincronização configurada!');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Erro ao configurar sincronização:', error);
+      toast.error('Erro ao configurar Firebase');
+      return false;
+    }
+  };
+
+  const forceSyncToCloud = async () => {
+    if (!isFirebaseConfiguredState) {
+      toast.error('Firebase não configurado');
+      return;
+    }
+    
+    setIsSyncing(true);
+    try {
+      await syncToCloud();
+      toast.success('📤 Dados enviados para nuvem!');
+    } catch (error) {
+      console.error('Erro ao forçar sincronização:', error);
+      toast.error('Erro ao sincronizar');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const resetSyncConfig = () => {
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+    }
+    setIsFirebaseConfiguredState(false);
+    setLastSyncTime(null);
+    resetFirebaseConfig();
+    toast.success('🔧 Configuração de sincronização removida');
+  };
+
   return {
     // Estados
     volunteers,
@@ -326,6 +543,9 @@ export function useIndexedDB(seedData?: {
     isLoading,
     isReady,
     usingFallback,
+    isFirebaseConfigured: isFirebaseConfiguredState,
+    isSyncing,
+    lastSyncTime,
     
     // Setters
     setVolunteers,
@@ -342,6 +562,11 @@ export function useIndexedDB(seedData?: {
     
     // Backup/Restore
     exportData,
-    importData
+    importData,
+    
+    // Sincronização Firebase
+    configureSync,
+    forceSyncToCloud,
+    resetSyncConfig
   };
 } 

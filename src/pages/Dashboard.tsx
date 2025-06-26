@@ -1,10 +1,11 @@
 import { useOutletContext } from "react-router-dom";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { Volunteer, Shift, Captain } from "../types";
 import { format, isAfter, startOfToday, addDays, isBefore } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, Cloud, Wifi, WifiOff, Settings, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { FirebaseConfig } from '../components/FirebaseConfig';
 
 type DashboardContext = {
     volunteers: Volunteer[];
@@ -13,8 +14,14 @@ type DashboardContext = {
     captains: Captain[];
     isReady: boolean;
     usingFallback: boolean;
+    isFirebaseConfigured: boolean;
+    isSyncing: boolean;
+    lastSyncTime: string | null;
     exportData: () => Promise<any>;
     importData: (data: any) => Promise<void>;
+    configureSync: (config: any) => Promise<boolean>;
+    forceSyncToCloud: () => Promise<void>;
+    resetSyncConfig: () => void;
 }
 
 const StatCard = ({ title, value, description }: { title: string, value: string | number, description: string }) => (
@@ -27,8 +34,23 @@ const StatCard = ({ title, value, description }: { title: string, value: string 
 
 
 export function Dashboard() {
-    const { volunteers, shifts, allocations, usingFallback, exportData, importData } = useOutletContext<DashboardContext>();
+    const { 
+        volunteers, 
+        shifts, 
+        allocations, 
+        usingFallback, 
+        isFirebaseConfigured,
+        isSyncing,
+        lastSyncTime,
+        exportData, 
+        importData,
+        configureSync,
+        forceSyncToCloud,
+        resetSyncConfig
+    } = useOutletContext<DashboardContext>();
+    
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [showFirebaseConfig, setShowFirebaseConfig] = useState(false);
 
     // Função para exportar dados para JSON usando IndexedDB
     const exportToJSON = async () => {
@@ -177,6 +199,76 @@ export function Dashboard() {
                         <span className="sm:hidden">🗑️ Reset</span>
                     </button>
                 </div>
+                
+                {/* Seção de Sincronização Firebase */}
+                <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <Cloud className="h-5 w-5 text-orange-600" />
+                            <h3 className="font-semibold text-gray-900">Sincronização Automática</h3>
+                            {isFirebaseConfigured ? (
+                                <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                                    <Wifi className="h-3 w-3" />
+                                    Ativa
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                                    <WifiOff className="h-3 w-3" />
+                                    Inativa
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="flex-1 text-sm text-gray-600">
+                            {isFirebaseConfigured ? (
+                                <div>
+                                    <p>✅ Dados sincronizam automaticamente entre dispositivos</p>
+                                    {lastSyncTime && (
+                                        <p className="text-xs text-gray-500">
+                                            Última sincronização: {lastSyncTime}
+                                        </p>
+                                    )}
+                                </div>
+                            ) : (
+                                <p>Configure o Firebase para sincronizar dados automaticamente entre dispositivos</p>
+                            )}
+                        </div>
+                        
+                        <div className="flex gap-2">
+                            {isFirebaseConfigured ? (
+                                <>
+                                    <button
+                                        onClick={forceSyncToCloud}
+                                        disabled={isSyncing}
+                                        className="bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+                                    >
+                                        <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                                        {isSyncing ? 'Sincronizando...' : 'Forçar Sync'}
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (window.confirm('🔧 Deseja remover a configuração de sincronização?\n\nOS DADOS LOCAIS NÃO SERÃO PERDIDOS.')) {
+                                                resetSyncConfig();
+                                            }
+                                        }}
+                                        className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+                                    >
+                                        <Settings className="h-4 w-4" />
+                                        Reconfigurar
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    onClick={() => setShowFirebaseConfig(true)}
+                                    className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+                                >
+                                    <Cloud className="h-4 w-4" />
+                                    Configurar Sincronização
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
             </div>
             
             {/* Grid de estatísticas responsivo */}
@@ -265,6 +357,14 @@ export function Dashboard() {
                     )}
                 </div>
             </div>
+            
+            {/* Modal de configuração Firebase */}
+            <FirebaseConfig
+                isOpen={showFirebaseConfig}
+                onClose={() => setShowFirebaseConfig(false)}
+                onConfigure={configureSync}
+                isLoading={isSyncing}
+            />
         </div>
     )
 } 
