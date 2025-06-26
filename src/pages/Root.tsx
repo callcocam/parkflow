@@ -3,7 +3,14 @@ import { useState, useEffect } from "react";
 import { nanoid } from "nanoid";
 import type { Volunteer, Shift, Captain } from "../types";
 import { Toaster } from 'react-hot-toast';
-import { Menu } from 'lucide-react';
+import { Menu, Loader2 } from 'lucide-react';
+import { useSupabaseState } from '../hooks/useSupabaseState';
+import { useDataSync } from '../hooks/useDataSync';
+import { useVolunteerOperations } from '../hooks/useVolunteerOperations';
+import { useShiftOperations } from '../hooks/useShiftOperations';
+import { useAllocationOperations } from '../hooks/useAllocationOperations';
+import { useCaptainOperations } from '../hooks/useCaptainOperations';
+import { useBackupRestore } from '../hooks/useBackupRestore';
 
 const seedVolunteers: Volunteer[] = [
   { id: 'seed-1', name: 'Tiago Davila Jaques Da Silva', phone: '51998590784', congregation: 'Sul de sapiranga', city: 'Sapiranga', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
@@ -72,8 +79,6 @@ const seedShifts: Shift[] = [
   { id: 'shift-27-manha-patio-5', date: '2025-06-27', startTime: '14:30', endTime: '16:00', location: 'patio', requiredVolunteers: 2, periodName: 'Tarde' },
   { id: 'shift-27-tarde-patio-1', date: '2025-06-27', startTime: '16:00', endTime: '17:30', location: 'patio', requiredVolunteers: 1, periodName: 'Tarde' },
 
-
-
   // Dia 28/06/2025 - Manhã Sabado Portaria
   { id: 'shift-28-manha-portaria-1', date: '2025-06-28', startTime: '07:00', endTime: '09:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
   { id: 'shift-28-manha-portaria-2', date: '2025-06-28', startTime: '09:00', endTime: '10:45', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
@@ -90,9 +95,6 @@ const seedShifts: Shift[] = [
   { id: 'shift-28-manha-patio-4', date: '2025-06-28', startTime: '13:00', endTime: '14:30', location: 'patio', requiredVolunteers: 2, periodName: 'Tarde' },
   { id: 'shift-28-manha-patio-5', date: '2025-06-28', startTime: '14:30', endTime: '16:00', location: 'patio', requiredVolunteers: 2, periodName: 'Tarde' },
   { id: 'shift-28-tarde-patio-1', date: '2025-06-28', startTime: '16:00', endTime: '17:30', location: 'patio', requiredVolunteers: 1, periodName: 'Tarde' },
-
-
-
 
   // Dia 29/06/2025 - Manhã Domingo Portaria
   { id: 'shift-29-manha-portaria-1', date: '2025-06-29', startTime: '07:00', endTime: '09:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
@@ -160,81 +162,116 @@ function loadFromLocalStorage<T>(key: string, defaultValue: T): T {
 
 export function Root() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [volunteers, setVolunteers] = useState<Volunteer[]>(() => loadFromLocalStorage('volunteers', seedVolunteers));
-  const [shifts, setShifts] = useState<Shift[]>(() => loadFromLocalStorage('shifts', seedShifts));
-  const [captains, setCaptains] = useState<Captain[]>(() => loadFromLocalStorage('captains', []));
-  const [allocations, setAllocations] = useState<Record<string, string[]>>(() => loadFromLocalStorage('allocations', seedAllocations));
-  console.log(allocations)
+  
+  // Hook principal para gerenciar estado com Supabase
+  const {
+    volunteers,
+    shifts,
+    allocations,
+    captains,
+    isLoading,
+    error,
+    setVolunteers,
+    setShifts,
+    setAllocations,
+    setCaptains
+  } = useSupabaseState();
 
-  // Efeitos para salvar no localStorage sempre que o estado mudar
+  // Hook para sincronização inicial
+  const { syncAllData } = useDataSync();
+
+  // Helper para salvar no localStorage (backup)
+  const saveToLocalStorage = (key: string, data: any) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (error) {
+      console.error(`Erro ao salvar '${key}' no localStorage:`, error);
+    }
+  };
+
+  // Hook para operações de voluntários
+  const {
+    handleAddVolunteer,
+    handleEditVolunteer,
+    handleDeleteVolunteer,
+    handleToggleLeader
+  } = useVolunteerOperations(volunteers, setVolunteers, saveToLocalStorage);
+
+  // Hook para operações de turnos
+  const {
+    handleAddShift,
+    handleDeleteShift,
+    handleAddMultipleShifts,
+    handleUpdateShift
+  } = useShiftOperations(shifts, setShifts, saveToLocalStorage);
+
+  // Hook para operações de alocações
+  const {
+    handleAddAllocation,
+    handleRemoveAllocation,
+    handleReplaceAllAllocations,
+    handleMoveAllocation,
+    handleClearShiftAllocations,
+    handleAddMultipleAllocations
+  } = useAllocationOperations(allocations, setAllocations, saveToLocalStorage);
+
+  // Hook para operações de capitães
+  const {
+    handleSetCaptain,
+    handleRemoveCaptain,
+    handleUpdateCaptain,
+    handleSetMultipleCaptains,
+    handleClearAllCaptains,
+    handleReplaceAllCaptains,
+    getCaptainByDate
+  } = useCaptainOperations(captains, setCaptains, saveToLocalStorage);
+
+  // Hook para backup/restore com sincronização completa
+  const {
+    exportBackup,
+    importBackup,
+    syncLocalToSupabase,
+    syncSupabaseToLocal
+  } = useBackupRestore(
+    volunteers, shifts, allocations, captains,
+    setVolunteers, setShifts, setAllocations, setCaptains,
+    saveToLocalStorage
+  );
+
+  // Sincronização inicial dos dados seed
   useEffect(() => {
-    localStorage.setItem('volunteers', JSON.stringify(volunteers));
-  }, [volunteers]);
-
-  useEffect(() => {
-    localStorage.setItem('shifts', JSON.stringify(shifts));
-  }, [shifts]);
-
-  useEffect(() => {
-    localStorage.setItem('captains', JSON.stringify(captains));
-  }, [captains]);
-
-  useEffect(() => {
-    localStorage.setItem('allocations', JSON.stringify(allocations));
-  }, [allocations]);
-
-  const handleAddVolunteer = (volunteerData: Omit<Volunteer, 'id'>) => {
-    const newVolunteer: Volunteer = {
-      id: nanoid(),
-      ...volunteerData,
+    const performInitialSync = async () => {
+      if (!isLoading && volunteers.length >= 0) {
+        try {
+          await syncAllData(seedVolunteers, seedShifts, seedAllocations, []);
+        } catch (error) {
+          console.error('Erro na sincronização inicial:', error);
+        }
+      }
     };
-    setVolunteers((prev) => [...prev, newVolunteer]);
-  };
 
-  const handleEditVolunteer = (updatedVolunteer: Volunteer) => {
-    setVolunteers((prev) =>
-      prev.map((volunteer) =>
-        volunteer.id === updatedVolunteer.id ? updatedVolunteer : volunteer
-      )
+    performInitialSync();
+  }, [isLoading, volunteers.length, syncAllData]);
+
+  // Operações de turnos agora são gerenciadas pelo hook useShiftOperations
+
+  // Tela de carregamento
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <h2 className="text-lg font-semibold text-gray-700 mb-2">Carregando ParkFlow...</h2>
+          <p className="text-sm text-gray-500">Sincronizando dados com o banco</p>
+          {error && (
+            <p className="text-sm text-orange-600 mt-2">
+              ⚠️ {error}
+            </p>
+          )}
+        </div>
+      </div>
     );
-  };
-
-  const handleDeleteVolunteer = (id: string) => {
-    setVolunteers((prev) => prev.filter((v) => v.id !== id));
-  };
-
-  const handleToggleLeader = (id: string) => {
-    setVolunteers((prev) =>
-      prev.map((volunteer) =>
-        volunteer.id === id
-          ? { ...volunteer, isTeamLeader: !volunteer.isTeamLeader }
-          : volunteer
-      )
-    );
-  };
-
-  const handleAddShift = (shiftData: Omit<Shift, 'id'>) => {
-    const newShift: Shift = {
-      id: nanoid(),
-      ...shiftData,
-    };
-    setShifts((prev) => [...prev, newShift]);
-  };
-
-  const handleDeleteShift = (id: string) => {
-    setShifts((prev) => prev.filter((s) => s.id !== id));
-  };
-
-
-
-
-  // Executar a alocação automática quando os dados estiverem carregados
-  // Comentado pois agora usamos as alocações predefinidas em seedAllocations
-  // useEffect(() => {
-  //   if (volunteers.length > 0 && shifts.length > 0) {
-  //     autoAllocatePatioShifts();
-  //   }
-  // }, [volunteers.length, shifts.length]); // Executa quando volunteers e shifts estão disponíveis
+  }
 
   return (
     <div className="flex">
@@ -259,9 +296,10 @@ export function Root() {
       <main className="flex-1 p-8 md:ml-0">
         <Outlet context={{
           volunteers, handleAddVolunteer, handleEditVolunteer, handleDeleteVolunteer, handleToggleLeader, setVolunteers,
-          shifts, handleAddShift, handleDeleteShift, setShifts,
-          captains, setCaptains,
-          allocations, setAllocations
+          shifts, handleAddShift, handleDeleteShift, handleAddMultipleShifts, handleUpdateShift, setShifts,
+          captains, handleSetCaptain, handleRemoveCaptain, handleUpdateCaptain, handleSetMultipleCaptains, handleClearAllCaptains, handleReplaceAllCaptains, getCaptainByDate, setCaptains,
+          allocations, handleAddAllocation, handleRemoveAllocation, handleReplaceAllAllocations, handleMoveAllocation, handleClearShiftAllocations, handleAddMultipleAllocations, setAllocations,
+          exportBackup, importBackup, syncLocalToSupabase, syncSupabaseToLocal
         }} />
       </main>
     </div>

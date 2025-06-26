@@ -190,3 +190,35 @@ Aqui vamos acompanhar o progresso do desenvolvimento, marcando as tarefas como p
 - ✅ Script SQL completo para setup automático das tabelas
 - ✅ Documentação detalhada de configuração (SUPABASE_SETUP.md)
 - ✅ Compatibilidade mantida com sistema de backup/restauração existente
+
+### Fase 13: Sistema Híbrido e Migração Gradual (Concluída)
+- ✅ **Passo 1**: Criação de hooks personalizados para estado híbrido:
+  - ✅ `useSupabaseState` - Gerenciamento de estado com fallback para localStorage
+  - ✅ `useDataSync` - Sincronização inicial dos dados seed para Supabase
+  - ✅ `useVolunteerOperations` - Operações CRUD híbridas para voluntários
+  - ✅ Integração completa no componente Root.tsx
+  - ✅ Tela de carregamento com indicadores de progresso
+  - ✅ Tratamento de erros com fallback automático para dados locais
+  - ✅ Sincronização automática na primeira execução
+- ✅ **Passo 2**: Migração das operações de turnos para Supabase:
+  - ✅ `useShiftOperations` - Hook para operações CRUD de turnos
+  - ✅ Funções híbridas: adicionar, deletar, atualizar e operações em lote
+  - ✅ Fallback automático para localStorage em caso de erro
+  - ✅ Notificações toast para feedback do usuário
+- ✅ **Passo 3**: Migração das operações de alocações para Supabase:
+  - ✅ `useAllocationOperations` - Hook para operações de alocações
+  - ✅ Suporte a drag-and-drop, movimentação entre turnos e operações em lote
+  - ✅ Função de substituição completa para importação de dados
+  - ✅ Operações atômicas para mover voluntários entre turnos
+- ✅ **Passo 4**: Migração das operações de capitães para Supabase:
+  - ✅ `useCaptainOperations` - Hook para operações de capitães
+  - ✅ Definição, remoção e atualização de capitães por data
+  - ✅ Operações em lote e substituição completa
+  - ✅ Função de busca por data integrada
+- ✅ **Passo 5**: Sistema de sincronização bidirecional completo:
+  - ✅ `useBackupRestore` - Hook para backup/restore com Supabase
+  - ✅ Exportação de backup com versão 2.0 (inclui dados do Supabase)
+  - ✅ Importação com sincronização automática para Supabase
+  - ✅ Funções de sincronização manual: local→Supabase e Supabase→local
+  - ✅ Fallback inteligente para operações locais em caso de erro
+  - ✅ Integração completa no contexto da aplicação

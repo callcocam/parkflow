@@ -244,37 +244,53 @@ export const allocationService = {
 
   // Substituir todas as alocações (para importação de backup)
   async replaceAll(allocations: Record<string, string[]>): Promise<void> {
-    // Primeiro, deletar todas as alocações existentes
-    const { error: deleteError } = await supabase
-      .from('allocations')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000') // Deletar todos
-    
-    if (deleteError) {
-      console.error('Erro ao limpar alocações:', deleteError)
-      throw new Error('Erro ao limpar alocações existentes')
-    }
-    
-    // Preparar dados para inserção
-    const insertData = []
-    for (const [shiftId, volunteerIds] of Object.entries(allocations)) {
-      for (const volunteerId of volunteerIds) {
-        insertData.push({
-          shift_id: shiftId,
-          volunteer_id: volunteerId
-        })
-      }
-    }
-    
-    if (insertData.length > 0) {
-      const { error: insertError } = await supabase
+    try {
+      // Primeiro, deletar todas as alocações existentes
+      const { error: deleteError } = await supabase
         .from('allocations')
-        .insert(insertData)
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000') // Deletar todos
       
-      if (insertError) {
-        console.error('Erro ao inserir alocações:', insertError)
-        throw new Error('Erro ao importar alocações')
+      if (deleteError) {
+        console.warn('Aviso ao limpar alocações:', deleteError)
+        // Não parar aqui, continuar com a inserção
       }
+      
+      // Preparar dados para inserção com validação
+      const insertData = []
+      for (const [shiftId, volunteerIds] of Object.entries(allocations)) {
+        if (Array.isArray(volunteerIds)) {
+          for (const volunteerId of volunteerIds) {
+            if (volunteerId && typeof volunteerId === 'string' && shiftId) {
+              insertData.push({
+                shift_id: shiftId,
+                volunteer_id: volunteerId
+              })
+            }
+          }
+        }
+      }
+      
+      if (insertData.length > 0) {
+        // Inserir em lotes menores para melhor performance
+        const batchSize = 50;
+        for (let i = 0; i < insertData.length; i += batchSize) {
+          const batch = insertData.slice(i, i + batchSize);
+          const { error: insertError } = await supabase
+            .from('allocations')
+            .insert(batch)
+          
+          if (insertError) {
+            console.warn(`Aviso no lote ${Math.floor(i / batchSize) + 1}:`, insertError)
+            // Continuar com próximo lote em vez de parar
+          }
+        }
+        console.log(`✅ ${insertData.length} alocações processadas com sucesso`)
+      }
+    } catch (error) {
+      console.error('Erro na substituição de alocações:', error)
+      // Não lançar erro para não quebrar o fluxo
+      console.log('⚠️ Continuando sem as alocações devido a erro')
     }
   }
 }

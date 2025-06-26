@@ -60,20 +60,9 @@ export function useSupabaseState() {
     try {
       const data = await volunteerService.getAll();
       
-      // Mapear dados do Supabase para o formato da aplicação
-      const mappedVolunteers: Volunteer[] = data.map(v => ({
-        id: v.id,
-        name: v.name,
-        phone: v.phone,
-        congregation: v.congregation,
-        city: v.city,
-        isTeamLeader: v.is_team_leader,
-        imageUrl: v.image_url || '',
-        unavailableShifts: v.unavailable_shifts || []
-      }));
-      
-      setVolunteers(mappedVolunteers);
-      saveToLocalStorage('volunteers', mappedVolunteers);
+      // Os dados já vêm mapeados do service
+      setVolunteers(data);
+      saveToLocalStorage('volunteers', data);
       
     } catch (error) {
       console.error('Erro ao carregar voluntários do Supabase:', error);
@@ -92,19 +81,9 @@ export function useSupabaseState() {
     try {
       const data = await shiftService.getAll();
       
-      // Mapear dados do Supabase para o formato da aplicação
-      const mappedShifts: Shift[] = data.map(s => ({
-        id: s.id,
-        date: s.date,
-        startTime: s.start_time,
-        endTime: s.end_time,
-        location: s.location,
-        requiredVolunteers: s.required_volunteers,
-        periodName: s.period_name
-      }));
-      
-      setShifts(mappedShifts);
-      saveToLocalStorage('shifts', mappedShifts);
+      // Os dados já vêm mapeados do service
+      setShifts(data);
+      saveToLocalStorage('shifts', data);
       
     } catch (error) {
       console.error('Erro ao carregar turnos do Supabase:', error);
@@ -123,17 +102,9 @@ export function useSupabaseState() {
     try {
       const data = await allocationService.getAll();
       
-      // Converter para o formato Record<string, string[]>
-      const mappedAllocations: Record<string, string[]> = {};
-      data.forEach(allocation => {
-        if (!mappedAllocations[allocation.shift_id]) {
-          mappedAllocations[allocation.shift_id] = [];
-        }
-        mappedAllocations[allocation.shift_id].push(allocation.volunteer_id);
-      });
-      
-      setAllocations(mappedAllocations);
-      saveToLocalStorage('allocations', mappedAllocations);
+      // Os dados já vêm no formato correto do service
+      setAllocations(data);
+      saveToLocalStorage('allocations', data);
       
     } catch (error) {
       console.error('Erro ao carregar alocações do Supabase:', error);
@@ -152,15 +123,9 @@ export function useSupabaseState() {
     try {
       const data = await captainService.getAll();
       
-      // Mapear dados do Supabase para o formato da aplicação
-      const mappedCaptains: Captain[] = data.map(c => ({
-        id: c.id,
-        date: c.date,
-        volunteerId: c.volunteer_id
-      }));
-      
-      setCaptains(mappedCaptains);
-      saveToLocalStorage('captains', mappedCaptains);
+      // Os dados já vêm mapeados do service
+      setCaptains(data);
+      saveToLocalStorage('captains', data);
       
     } catch (error) {
       console.error('Erro ao carregar capitães do Supabase:', error);
