@@ -214,14 +214,13 @@ export function useIndexedDB(seedData?: {
     }
   };
 
-  const syncFromCloud = async () => {
-    if (!isFirebaseConfiguredState) return;
+    const syncFromCloud = async (showToast = true) => {
+    if (!isFirebaseConfiguredState) return false;
     
     try {
-      setIsSyncing(true);
       const cloudData = await loadFromFirestore();
       
-             if (cloudData && (cloudData.syncTimestamp || 0) > lastSyncTimestamp.current) {
+      if (cloudData && (cloudData.syncTimestamp || 0) > lastSyncTimestamp.current) {
         console.log('📥 Sincronizando dados da nuvem');
         
         // Atualizar estados locais
@@ -245,12 +244,23 @@ export function useIndexedDB(seedData?: {
         
         lastSyncTimestamp.current = cloudData.syncTimestamp || Date.now();
         setLastSyncTime(new Date().toLocaleString('pt-BR'));
-        toast.success('📥 Dados sincronizados da nuvem!');
+        
+        if (showToast) {
+          toast.success('📥 Dados baixados da nuvem!');
+        }
+        return true;
       }
+      
+      if (showToast && cloudData) {
+        toast.success('✅ Dados já estão atualizados!');
+      }
+      return false;
     } catch (error) {
       console.error('Erro ao sincronizar da nuvem:', error);
-    } finally {
-      setIsSyncing(false);
+      if (showToast) {
+        toast.error('❌ Erro ao baixar dados da nuvem');
+      }
+      return false;
     }
   };
 
@@ -488,11 +498,23 @@ export function useIndexedDB(seedData?: {
     
     setIsSyncing(true);
     try {
+      console.log('🔄 Iniciando sincronização completa...');
+      
+      // 1. Primeiro baixar dados da nuvem (se houver mais recentes)
+      const hasCloudChanges = await syncFromCloud(false);
+      
+      // 2. Depois enviar dados locais para nuvem
       await syncToCloud();
-      toast.success('📤 Dados enviados para nuvem!');
+      
+      // 3. Feedback baseado no que aconteceu
+      if (hasCloudChanges) {
+        toast.success('🔄 Sincronização completa! Dados atualizados da nuvem.');
+      } else {
+        toast.success('📤 Dados enviados para nuvem!');
+      }
     } catch (error) {
       console.error('Erro ao forçar sincronização:', error);
-      toast.error('Erro ao sincronizar');
+      toast.error('❌ Erro ao sincronizar');
     } finally {
       setIsSyncing(false);
     }
