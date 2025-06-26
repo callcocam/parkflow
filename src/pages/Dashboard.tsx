@@ -1,12 +1,20 @@
 import { useOutletContext } from "react-router-dom";
-import type { Volunteer, Shift } from "../types";
+import { useRef } from "react";
+import type { Volunteer, Shift, Captain } from "../types";
 import { format, isAfter, startOfToday, addDays, isBefore } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Download, Upload } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 type DashboardContext = {
     volunteers: Volunteer[];
     shifts: Shift[];
     allocations: Record<string, string[]>;
+    captains: Captain[];
+    setVolunteers: React.Dispatch<React.SetStateAction<Volunteer[]>>;
+    setShifts: React.Dispatch<React.SetStateAction<Shift[]>>;
+    setAllocations: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
+    setCaptains: React.Dispatch<React.SetStateAction<Captain[]>>;
 }
 
 const StatCard = ({ title, value, description }: { title: string, value: string | number, description: string }) => (
@@ -19,7 +27,87 @@ const StatCard = ({ title, value, description }: { title: string, value: string 
 
 
 export function Dashboard() {
-    const { volunteers, shifts, allocations } = useOutletContext<DashboardContext>();
+    const { volunteers, shifts, allocations, captains, setVolunteers, setShifts, setAllocations, setCaptains } = useOutletContext<DashboardContext>();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Função para exportar dados para JSON
+    const exportToJSON = () => {
+        const data = {
+            volunteers,
+            shifts,
+            allocations,
+            captains,
+            exportDate: new Date().toISOString(),
+            version: "1.0"
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `parkflow-backup-${format(new Date(), 'dd-MM-yyyy-HH-mm')}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        toast.success('Backup exportado com sucesso!');
+    };
+
+    // Função para importar dados do JSON
+    const importFromJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const content = e.target?.result as string;
+                const data = JSON.parse(content);
+
+                // Validar estrutura básica
+                if (!data.volunteers || !data.shifts || !data.allocations) {
+                    throw new Error('Arquivo JSON inválido: estrutura de dados incorreta');
+                }
+
+                // Confirmar importação
+                const confirmImport = window.confirm(
+                    `Tem certeza que deseja importar este backup?\n\n` +
+                    `Data do backup: ${data.exportDate ? format(new Date(data.exportDate), 'dd/MM/yyyy HH:mm') : 'Desconhecida'}\n` +
+                    `Voluntários: ${data.volunteers.length}\n` +
+                    `Turnos: ${data.shifts.length}\n` +
+                    `Alocações: ${Object.values(data.allocations).flat().length}\n` +
+                    `Capitães: ${data.captains?.length || 0}\n\n` +
+                    `ATENÇÃO: Todos os dados atuais serão substituídos!`
+                );
+
+                if (confirmImport) {
+                    // Atualizar todos os estados
+                    setVolunteers(data.volunteers);
+                    setShifts(data.shifts);
+                    setAllocations(data.allocations);
+                    setCaptains(data.captains || []);
+
+                    // Atualizar localStorage diretamente
+                    localStorage.setItem('volunteers', JSON.stringify(data.volunteers));
+                    localStorage.setItem('shifts', JSON.stringify(data.shifts));
+                    localStorage.setItem('allocations', JSON.stringify(data.allocations));
+                    localStorage.setItem('captains', JSON.stringify(data.captains || []));
+
+                    toast.success('Backup importado com sucesso!');
+                }
+            } catch (error) {
+                console.error('Erro ao importar JSON:', error);
+                toast.error('Erro ao importar arquivo: ' + (error instanceof Error ? error.message : 'Formato inválido'));
+            }
+        };
+        reader.readAsText(file);
+        
+        // Limpar input para permitir reimportar o mesmo arquivo
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
 
     const totalAllocations = Object.values(allocations).flat().length;
 
@@ -43,7 +131,32 @@ export function Dashboard() {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl font-bold">Dashboard</h1>
+                <div className="flex gap-3">
+                    <button
+                        onClick={exportToJSON}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+                    >
+                        <Download size={16} />
+                        Exportar Backup
+                    </button>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".json"
+                        onChange={importFromJSON}
+                        className="hidden"
+                    />
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+                    >
+                        <Upload size={16} />
+                        Importar Backup
+                    </button>
+                </div>
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <StatCard title="Total de Voluntários" value={volunteers.length} description="Voluntários cadastrados" />

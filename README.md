@@ -88,3 +88,37 @@ Aqui vamos acompanhar o progresso do desenvolvimento, marcando as tarefas como p
   - ✅ Voluntários indisponíveis não veem opções de turnos conflitantes
   - ✅ Turnos já alocados mostram status "INDISPONÍVEL" quando aplicável
   - ✅ Sistema preserva alocações existentes mesmo com conflitos de disponibilidade
+- ✅ Implementado filtro por nome na página de voluntários com busca em tempo real
+- ✅ Sistema de múltiplas alocações permitindo voluntário em vários turnos por dia
+- ✅ Interface com checkboxes individuais para seleção de turnos múltiplos
+- ✅ Visualização de todos os turnos atuais do voluntário na coluna "Turnos Atuais"
+
+### Fase 9: Sistema de Backup e Restauração (Concluída)
+- ✅ Funcionalidade de exportar backup completo em JSON no Dashboard
+- ✅ Funcionalidade de importar backup JSON com substituição completa dos dados
+- ✅ Validação de estrutura do arquivo JSON na importação
+- ✅ Confirmação detalhada antes da importação com informações do backup
+- ✅ Notificações de sucesso/erro para operações de backup
+- ✅ Nomenclatura automática de arquivos com data/hora (formato: parkflow-backup-DD-MM-YYYY-HH-mm.json)
+- ✅ Atualização automática do localStorage após importação
+- ✅ Backup inclui: voluntários, turnos, alocações, capitães, data de exportação e versão
+- ✅ Correção da página de Capitães para mostrar um capitão por dia (não por local)
+- ✅ Interface atualizada com datas corretas (27/06, 28/06, 29/06/2025) e nomes dos dias da semana
+- ✅ Correção do problema de fuso horário nas datas da página de Capitães
+- ✅ Ordenação correta dos dias (sexta, sábado, domingo) na página de Capitães
+
+### Fase 10: Visualização das Alocações (Concluída)
+- ✅ Transformação da página de Alocação Drag&Drop em "Visualização das Alocações"
+- ✅ Organização dos turnos por dia da semana (Sexta-feira, Sábado, Domingo)
+- ✅ Sistema de cores para status dos turnos:
+  - 🔴 Vermelho: Turnos vazios (sem voluntários)
+  - 🟡 Amarelo: Turnos incompletos (faltam voluntários)
+  - 🟢 Verde: Turnos completos (todos os voluntários alocados)
+- ✅ Visualização clara de vagas disponíveis com placeholders
+- ✅ Informações detalhadas de cada turno: horário, local, período
+- ✅ Identificação visual de líderes de equipe com ícone de estrela
+- ✅ Resumo geral com estatísticas de turnos completos, incompletos e vazios
+- ✅ Layout responsivo organizado por cards de turnos
+- ✅ Ordenação automática: primeiro por local (portaria antes pátio), depois por horário
+- ✅ Atualização dos dados padrão dos voluntários com horários indisponíveis configurados
+- ✅ Correção das quantidades de voluntários necessários em alguns turnos (padronização)

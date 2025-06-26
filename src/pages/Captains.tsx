@@ -13,21 +13,21 @@ type CaptainsContext = {
 export function Captains() {
     const { volunteers, shifts, allocations, captains, setCaptains } = useOutletContext<CaptainsContext>();
 
-    // Agrupar turnos por data e local
+    // Agrupar turnos por data apenas (um capitão por dia)
     const groups = shifts.reduce((acc, shift) => {
-        const key = `${shift.date}|${shift.location}`;
+        const key = shift.date;
         if (!acc[key]) {
-            acc[key] = { date: shift.date, location: shift.location, shifts: [] };
+            acc[key] = { date: shift.date, shifts: [] };
         }
         acc[key].shifts.push(shift);
         return acc;
-    }, {} as Record<string, { date: string, location: 'portaria' | 'patio', shifts: Shift[] }>);
+    }, {} as Record<string, { date: string, shifts: Shift[] }>);
 
-    const handleSetCaptain = (date: string, location: 'portaria' | 'patio', volunteerId: string) => {
+    const handleSetCaptain = (date: string, volunteerId: string) => {
         setCaptains((prev: any) => {
-            const otherCaptains = prev.filter((c: Captain) => !(c.date === date && c.location === location));
+            const otherCaptains = prev.filter((c: Captain) => c.date !== date);
             if (volunteerId) { // Se um voluntário foi selecionado
-                return [...otherCaptains, { date, location, volunteerId }];
+                return [...otherCaptains, { date, location: 'portaria', volunteerId }]; // location é obrigatório mas não importa aqui
             }
             return otherCaptains; // Se "Nenhum" foi selecionado
         });
@@ -36,24 +36,28 @@ export function Captains() {
     return (
         <div>
             <h1 className="text-2xl font-bold">Designar Capitães</h1>
-            <p className="mt-2 mb-8">Selecione uma data e um local para designar um capitão dentre os voluntários escalados.</p>
+            <p className="mt-2 mb-8">Selecione um capitão para cada dia dentre os voluntários escalados.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Object.values(groups).map(group => {
+                {Object.values(groups).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map(group => {
                     const shiftsInGroup = group.shifts.map(s => s.id);
                     const volunteerIdsInGroup = new Set(shiftsInGroup.flatMap(sid => allocations[sid] || []));
                     const eligibleVolunteers = volunteers.filter(v => volunteerIdsInGroup.has(v.id));
-                    const currentCaptain = captains.find(c => c.date === group.date && c.location === group.location);
+                    const currentCaptain = captains.find(c => c.date === group.date);
+
+                    // Determinar o dia da semana - usando formato ISO para evitar problemas de fuso horário
+                    const dayOfWeek = new Date(`${group.date}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long' });
+                    const dayName = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
 
                     return (
-                        <div key={`${group.date}-${group.location}`} className="p-4 bg-white rounded-lg shadow">
-                            <h3 className="font-bold text-lg capitalize">{group.location}</h3>
-                            <p className="text-sm text-gray-600 mb-4">{format(new Date(group.date), 'dd/MM/yyyy')}</p>
+                        <div key={group.date} className="p-4 bg-white rounded-lg shadow">
+                            <h3 className="font-bold text-lg">{dayName}</h3>
+                            <p className="text-sm text-gray-600 mb-4">{format(new Date(`${group.date}T12:00:00`), 'dd/MM/yyyy')}</p>
                             
-                            <label htmlFor={`captain-select-${group.date}-${group.location}`} className="block text-sm font-medium text-gray-700">Capitão:</label>
+                            <label htmlFor={`captain-select-${group.date}`} className="block text-sm font-medium text-gray-700">Capitão:</label>
                             <select
-                                id={`captain-select-${group.date}-${group.location}`}
+                                id={`captain-select-${group.date}`}
                                 value={currentCaptain?.volunteerId || ""}
-                                onChange={(e) => handleSetCaptain(group.date, group.location, e.target.value)}
+                                onChange={(e) => handleSetCaptain(group.date, e.target.value)}
                                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
                                 disabled={eligibleVolunteers.length === 0}
                             >
@@ -62,7 +66,7 @@ export function Captains() {
                                     <option key={v.id} value={v.id}>{v.name}</option>
                                 ))}
                             </select>
-                            {eligibleVolunteers.length === 0 && <p className="text-xs text-red-500 mt-1">Nenhum voluntário alocado para este grupo.</p>}
+                            {eligibleVolunteers.length === 0 && <p className="text-xs text-red-500 mt-1">Nenhum voluntário alocado para este dia.</p>}
                         </div>
                     );
                 })}

@@ -37,28 +37,37 @@ export function AllocationSelect() {
   const [locationFilter, setLocationFilter] = useState<'all' | 'portaria' | 'patio'>('all');
   const [nameFilter, setNameFilter] = useState<string>('');
 
-  // Função para obter o turno atual de um voluntário
-  const getCurrentShift = (volunteerId: string): string => {
+  // Função para obter todos os turnos de um voluntário
+  const getVolunteerShifts = (volunteerId: string): string[] => {
+    const volunteerShifts: string[] = [];
     for (const [shiftId, volunteerIds] of Object.entries(allocations)) {
       if (volunteerIds.includes(volunteerId)) {
-        return shiftId;
+        volunteerShifts.push(shiftId);
       }
     }
-    return '';
+    return volunteerShifts;
+  };
+
+  // Função para verificar se voluntário está em um turno específico
+  const isVolunteerInShift = (volunteerId: string, shiftId: string): boolean => {
+    return allocations[shiftId]?.includes(volunteerId) || false;
   };
 
   // Função para alterar a alocação de um voluntário
   const handleShiftChange = (volunteerId: string, newShiftId: string) => {
-    const currentShiftId = getCurrentShift(volunteerId);
+    const volunteerShifts = getVolunteerShifts(volunteerId);
     
-    // Se selecionou "Não alocado", remove o voluntário de qualquer turno
+    // Se selecionou "Não alocado", remove o voluntário de todos os turnos
     if (newShiftId === '') {
-      if (currentShiftId) {
-        setAllocations(prev => ({
-          ...prev,
-          [currentShiftId]: prev[currentShiftId].filter(id => id !== volunteerId)
-        }));
-        toast.success('Voluntário removido do turno');
+      if (volunteerShifts.length > 0) {
+        setAllocations(prev => {
+          const newAllocations = { ...prev };
+          volunteerShifts.forEach(shiftId => {
+            newAllocations[shiftId] = newAllocations[shiftId].filter(id => id !== volunteerId);
+          });
+          return newAllocations;
+        });
+        toast.success('Voluntário removido de todos os turnos');
       }
       return;
     }
@@ -74,39 +83,28 @@ export function AllocationSelect() {
       return;
     }
 
-    // Validação: não permitir mais de um turno por dia por voluntário
-    const targetDate = targetShift.date;
-    const volunteerCurrentShiftsOnDate = Object.entries(allocations)
-      .filter(([shiftId, volunteerIds]) => {
-        const shift = shifts.find(s => s.id === shiftId);
-        return shift && shift.date === targetDate && volunteerIds.includes(volunteerId);
-      });
-
-    if (volunteerCurrentShiftsOnDate.length > 0 && currentShiftId !== newShiftId) {
-      toast.error('O voluntário já está alocado em outro turno neste dia');
-      return;
-    }
+    // Validação removida: agora permite múltiplos turnos por dia para o mesmo voluntário
 
     setAllocations(prev => {
       const newAllocations = { ...prev };
 
-      // Remove do turno atual se houver
-      if (currentShiftId && currentShiftId !== newShiftId) {
-        newAllocations[currentShiftId] = newAllocations[currentShiftId].filter(id => id !== volunteerId);
-      }
-
-      // Adiciona ao novo turno
+      // Verifica se o voluntário já está no turno selecionado
       if (!newAllocations[newShiftId]) {
         newAllocations[newShiftId] = [];
       }
-      if (!newAllocations[newShiftId].includes(volunteerId)) {
+      
+      if (newAllocations[newShiftId].includes(volunteerId)) {
+        // Se já está no turno, remove (toggle)
+        newAllocations[newShiftId] = newAllocations[newShiftId].filter(id => id !== volunteerId);
+        toast.success('Voluntário removido do turno');
+      } else {
+        // Se não está no turno, adiciona
         newAllocations[newShiftId].push(volunteerId);
+        toast.success('Voluntário alocado com sucesso!');
       }
 
       return newAllocations;
     });
-
-    toast.success('Voluntário alocado com sucesso!');
   };
 
   // Função para formatar o turno para exibição
@@ -249,17 +247,17 @@ export function AllocationSelect() {
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Turno Atual
+                  Turnos Atuais
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Selecionar Turno
+                  Selecionar Turnos
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredVolunteers.map((volunteer) => {
-                const currentShiftId = getCurrentShift(volunteer.id);
-                const currentShift = currentShiftId ? shifts.find(s => s.id === currentShiftId) : null;
+                const volunteerShifts = getVolunteerShifts(volunteer.id);
+                const currentShifts = volunteerShifts.map(shiftId => shifts.find(s => s.id === shiftId)).filter(Boolean);
                 
                 return (
                   <tr key={volunteer.id} className="hover:bg-gray-50">
@@ -294,73 +292,82 @@ export function AllocationSelect() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {currentShift ? (
-                        <div>
-                          <div className="flex items-center gap-1">
-                            <MapPin size={14} className="text-gray-400" />
-                            <span className="font-medium">
-                              {currentShift.location === 'portaria' ? 'Portaria' : 'Pátio'}
-                            </span>
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {(() => {
-                              const [year, month, day] = currentShift.date.split('-');
-                              const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                              return format(date, 'dd/MM', { locale: ptBR });
-                            })()} - {currentShift.startTime}-{currentShift.endTime}
-                          </div>
+                      {currentShifts.length > 0 ? (
+                        <div className="space-y-1">
+                          {currentShifts.map((shift, index) => (
+                            <div key={index}>
+                              <div className="flex items-center gap-1">
+                                <MapPin size={14} className="text-gray-400" />
+                                <span className="font-medium">
+                                  {shift?.location === 'portaria' ? 'Portaria' : 'Pátio'}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {(() => {
+                                  if (!shift) return '';
+                                  const [year, month, day] = shift.date.split('-');
+                                  const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                                  return format(date, 'dd/MM', { locale: ptBR });
+                                })()} - {shift?.startTime}-{shift?.endTime}
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       ) : (
                         <span className="text-gray-400 italic">Não alocado</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <select
-                        value={currentShiftId}
-                        onChange={(e) => handleShiftChange(volunteer.id, e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="">Não alocado</option>
-                                                 {filteredShifts.map((shift) => {
-                           const stats = getShiftStats(shift.id);
-                           const isCurrentShift = shift.id === currentShiftId;
-                           
-                           // Verificar se o voluntário está indisponível para este turno
-                           const isUnavailable = volunteer.unavailableShifts?.includes(shift.id) || false;
-                           
-                           // Para turnos especiais do pátio, sempre mostrar como CHEIO e desabilitar
-                           if (stats.isSpecialPatioShift) {
-                             return (
-                               <option 
-                                 key={shift.id} 
-                                 value={shift.id}
-                                 disabled={!isCurrentShift}
-                               >
-                                 {formatShiftDisplay(shift)} - CHEIO
-                               </option>
-                             );
-                           }
-                           
-                           // Se está indisponível, não mostrar a opção (exceto se já está alocado neste turno)
-                           if (isUnavailable && !isCurrentShift) {
-                             return null;
-                           }
-                           
-                           const canSelect = (!stats.isFull || isCurrentShift) && !isUnavailable;
-                           
-                           return (
-                             <option 
-                               key={shift.id} 
-                               value={shift.id}
-                               disabled={!canSelect}
-                             >
-                               {formatShiftDisplay(shift)} ({stats.allocated}/{stats.required})
-                               {stats.isFull && !isCurrentShift ? ' - CHEIO' : ''}
-                               {isUnavailable && isCurrentShift ? ' - INDISPONÍVEL' : ''}
-                             </option>
-                           );
-                         }).filter(Boolean)}
-                      </select>
+                      <div className="max-h-32 overflow-y-auto space-y-1">
+                        {filteredShifts.map((shift) => {
+                          const stats = getShiftStats(shift.id);
+                          const isVolunteerInThisShift = isVolunteerInShift(volunteer.id, shift.id);
+                          
+                          // Verificar se o voluntário está indisponível para este turno
+                          const isUnavailable = volunteer.unavailableShifts?.includes(shift.id) || false;
+                          
+                          // Para turnos especiais do pátio, sempre mostrar como CHEIO e desabilitar
+                          if (stats.isSpecialPatioShift) {
+                            return (
+                              <div key={shift.id} className="flex items-center space-x-2 text-xs">
+                                <input
+                                  type="checkbox"
+                                  checked={isVolunteerInThisShift}
+                                  disabled={true}
+                                  className="h-3 w-3 rounded border-gray-300"
+                                />
+                                <span className="text-gray-500">
+                                  {formatShiftDisplay(shift)} - CHEIO
+                                </span>
+                              </div>
+                            );
+                          }
+                          
+                          // Se está indisponível, não mostrar a opção (exceto se já está alocado neste turno)
+                          if (isUnavailable && !isVolunteerInThisShift) {
+                            return null;
+                          }
+                          
+                          const canSelect = (!stats.isFull || isVolunteerInThisShift) && !isUnavailable;
+                          
+                          return (
+                            <div key={shift.id} className="flex items-center space-x-2 text-xs">
+                              <input
+                                type="checkbox"
+                                checked={isVolunteerInThisShift}
+                                onChange={() => handleShiftChange(volunteer.id, shift.id)}
+                                disabled={!canSelect}
+                                className="h-3 w-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              />
+                              <span className={canSelect ? 'text-gray-900' : 'text-gray-400'}>
+                                {formatShiftDisplay(shift)} ({stats.allocated}/{stats.required})
+                                {stats.isFull && !isVolunteerInThisShift ? ' - CHEIO' : ''}
+                                {isUnavailable && isVolunteerInThisShift ? ' - INDISPONÍVEL' : ''}
+                              </span>
+                            </div>
+                          );
+                        }).filter(Boolean)}
+                      </div>
                     </td>
                   </tr>
                 );

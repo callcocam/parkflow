@@ -1,376 +1,265 @@
 import { useOutletContext } from "react-router-dom";
 import type { Volunteer, Shift } from "../types";
-import { DndContext, type DragEndEvent, DragOverlay, type DragStartEvent } from "@dnd-kit/core";
-import { SortableContext, arrayMove } from "@dnd-kit/sortable";
-import { useState } from "react";
-import { VolunteerDraggable } from "../components/VolunteerDraggable";
-import { ShiftDroppable } from "../components/ShiftDroppable";
-import { SortableShiftItem } from "../components/SortableShiftItem";
-import toast from 'react-hot-toast';
-import { format } from 'date-fns-tz';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Star } from 'lucide-react';
+import { Star, Users, Clock, MapPin } from 'lucide-react';
 
 // Contexto completo vindo do Root
 type AllocationContext = {
   volunteers: Volunteer[];
   shifts: Shift[];
-  setShifts: React.Dispatch<React.SetStateAction<Shift[]>>;
   allocations: Record<string, string[]>;
-  setAllocations: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
-  // Adicionaremos funções de manipulação de alocação aqui depois
 }
 
 const Avatar = ({ volunteer }: { volunteer: Volunteer }) => {
-    if (volunteer.imageUrl) {
-        return <img src={volunteer.imageUrl} alt={volunteer.name} className="h-8 w-8 rounded-full object-cover" />;
-    }
-
-    const getInitials = (name: string) => {
-        const names = name.split(' ');
-        if (names.length === 1) return names[0].substring(0,2).toUpperCase();
-        return (names[0][0] + names[names.length - 1][0]).toUpperCase();
-    }
-
-    return (
-        <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs">
-            {getInitials(volunteer.name)}
-        </div>
-    )
-}
-
-export function Allocation() {
-  const { volunteers, shifts, setShifts, allocations, setAllocations } = useOutletContext<AllocationContext>();
-  const [activeTab, setActiveTab] = useState<'portaria' | 'patio'>('portaria');
-  const [dateFilter, setDateFilter] = useState<string>('all');
-  const [periodFilter, setPeriodFilter] = useState<'all' | 'Manhã' | 'Tarde'>('all');
-  const [activeVolunteer, setActiveVolunteer] = useState<Volunteer | null>(null);
-
-  const handleAutoAllocate = () => {
-    console.log("Iniciando distribuição automática...");
-    const newAllocations: Record<string, string[]> = {};
-    const allocatedVolunteersByDay: Record<string, string[]> = {};
-
-    const sortedShifts = [...shifts].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.startTime.localeCompare(b.startTime));
-
-    for (const shift of sortedShifts) {
-        newAllocations[shift.id] = [];
-        const volunteersForThisDay = allocatedVolunteersByDay[shift.date] || [];
-        const availableForThisShift = volunteers.filter(v => !volunteersForThisDay.includes(v.id));
-
-        // Prioriza líderes de equipe se houver necessidade
-        const teamLeaders = availableForThisShift.filter(v => v.isTeamLeader);
-        for (const volunteer of teamLeaders) {
-            if (newAllocations[shift.id].length < shift.requiredVolunteers) {
-                newAllocations[shift.id].push(volunteer.id);
-                if (!allocatedVolunteersByDay[shift.date]) allocatedVolunteersByDay[shift.date] = [];
-                allocatedVolunteersByDay[shift.date].push(volunteer.id);
-            }
-        }
-        
-        const normalVolunteersPool = availableForThisShift.filter(v => !v.isTeamLeader && !newAllocations[shift.id].includes(v.id));
-
-        // Lógica de balanceamento por congregação
-        while (newAllocations[shift.id].length < shift.requiredVolunteers && normalVolunteersPool.length > 0) {
-            const congregationCounts = newAllocations[shift.id].reduce((acc, vId) => {
-                const vol = volunteers.find(v => v.id === vId);
-                if (vol) acc[vol.congregation] = (acc[vol.congregation] || 0) + 1;
-                return acc;
-            }, {} as Record<string, number>);
-
-            // Ordena os candidatos para priorizar congregações menos representadas
-            normalVolunteersPool.sort((a, b) => {
-                const countA = congregationCounts[a.congregation] || 0;
-                const countB = congregationCounts[b.congregation] || 0;
-                return countA - countB;
-            });
-
-            // Adiciona o melhor candidato
-            const volunteerToAdd = normalVolunteersPool.shift();
-            if (volunteerToAdd) {
-                newAllocations[shift.id].push(volunteerToAdd.id);
-                if (!allocatedVolunteersByDay[shift.date]) allocatedVolunteersByDay[shift.date] = [];
-                allocatedVolunteersByDay[shift.date].push(volunteerToAdd.id);
-            }
-        }
-    }
-
-    setAllocations(newAllocations);
-    toast.success("Voluntários distribuídos automaticamente!");
-    console.log("Distribuição automática concluída!", newAllocations);
-  };
-
-  const handleDragStart = (event: DragStartEvent) => {
-    const volunteerId = String(event.active.id);
-    const volunteer = volunteers.find(v => v.id === volunteerId);
-    setActiveVolunteer(volunteer || null);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { over, active } = event;
-
-    // Lógica de reordenação de turnos
-    if (active.data.current?.type === 'shift' && over) {
-        const oldIndex = shifts.findIndex(s => s.id === active.id);
-        const newIndex = shifts.findIndex(s => s.id === over.id);
-        if (oldIndex !== newIndex) {
-            setShifts(prev => arrayMove(prev, oldIndex, newIndex));
-        }
-        return;
-    }
-
-    const volunteerId = String(active.id);
-
-    if (!over) return;
-    
-    const targetShiftId = String(over.id);
-    
-    if (targetShiftId !== 'available-volunteers') {
-        const targetShift = shifts.find(s => s.id === targetShiftId);
-        const volunteer = volunteers.find(v => v.id === volunteerId);
-
-        if (!targetShift || !volunteer) return;
-
-        const currentVolunteersInShift = allocations[targetShiftId] || [];
-
-        // 1. Validação de capacidade
-        if (currentVolunteersInShift.length >= targetShift.requiredVolunteers) {
-            toast.error(`O turno "${targetShift.location}" já está cheio.`);
-            return; 
-        }
-
-        // 2. Validação de Líder de Equipe (ex: permitir apenas um) - Opcional, mantendo simples por agora
-        // if (volunteer.isTeamLeader) {
-        //   const hasTeamLeader = currentVolunteersInShift.some(vid => volunteers.find(v => v.id === vid)?.isTeamLeader);
-        //   if (hasTeamLeader) {
-        //     toast.error(`Já existe um líder de equipe neste turno.`);
-        //     return;
-        //   }
-        // }
-    }
-
-    setAllocations(prev => {
-      const newAllocations = JSON.parse(JSON.stringify(prev)); // Deep copy
-      const originShiftId = findShiftOfVolunteer(volunteerId, newAllocations);
-
-      // 1. Remover o voluntário da sua localização original (se houver)
-      if (originShiftId) {
-        newAllocations[originShiftId] = newAllocations[originShiftId].filter((id: string) => id !== volunteerId);
-      }
-      
-      // 2. Adicionar o voluntário ao novo turno
-      // A área "droppable" da lista de disponíveis terá um ID especial
-      if (targetShiftId !== "available-volunteers") {
-          if (!newAllocations[targetShiftId]) {
-            newAllocations[targetShiftId] = [];
-          }
-          if (!newAllocations[targetShiftId].includes(volunteerId)) {
-            newAllocations[targetShiftId].push(volunteerId);
-          }
-      }
-
-      return newAllocations;
-    });
-    
-    setActiveVolunteer(null);
-  };
-
-  const handleDragCancel = () => {
-    setActiveVolunteer(null);
-  };
-
-  const findShiftOfVolunteer = (volunteerId: string, currentAllocations: Record<string, string[]>) => {
-    return Object.keys(currentAllocations).find(shiftId => currentAllocations[shiftId].includes(volunteerId));
+  if (volunteer.imageUrl) {
+    return <img src={volunteer.imageUrl} alt={volunteer.name} className="h-8 w-8 rounded-full object-cover" />;
   }
- 
-  const availableVolunteers = volunteers; // Mostrar todos os voluntários sempre
 
-  // Função para calcular uso de cada voluntário
-  const getVolunteerUsage = (volunteerId: string) => {
-    const usedShifts = Object.entries(allocations)
-      .filter(([_, volunteerIds]) => volunteerIds.includes(volunteerId))
-      .map(([shiftId, _]) => shifts.find(s => s.id === shiftId))
-      .filter((shift): shift is Shift => shift !== undefined);
-    
-    return {
-      count: usedShifts.length,
-      shifts: usedShifts
-    };
-  };
-
-  const uniqueDates = [...new Set(shifts.map(s => s.date))].sort((a,b) => new Date(a).getTime() - new Date(b).getTime());
-
-  const filteredShifts = shifts.filter(s => {
-    const locationMatch = s.location === activeTab;
-    const dateMatch = dateFilter === 'all' || s.date === dateFilter;
-    const periodMatch = periodFilter === 'all' || s.periodName === periodFilter;
-    return locationMatch && dateMatch && periodMatch;
-  });
-  
-  const handleClearFilters = () => {
-    setDateFilter('all');
-    setPeriodFilter('all');
-  } 
-
-  const getHumanReadableShiftTitle = (shift: Shift) => {
-    const date = new Date(`${shift.date}T00:00:00`);
-    const dayOfWeek = format(date, "EEEE", { 
-        locale: ptBR,
-        timeZone: 'America/Sao_Paulo'
-    });
-
-    const title = `${shift.location} - ${dayOfWeek}-${shift.periodName}`;
-    return title.replace(/(^\w|-\w)/g, m => m.toUpperCase());
+  const getInitials = (name: string) => {
+    const names = name.split(' ');
+    if (names.length === 1) return names[0].substring(0, 2).toUpperCase();
+    return (names[0][0] + names[names.length - 1][0]).toUpperCase();
   }
 
   return (
-    <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart} onDragCancel={handleDragCancel}>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Alocação de Voluntários</h1>
-        <button
-          onClick={handleAutoAllocate}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-        >
-          Distribuir Automaticamente
-        </button>
-      </div>
-      <p className="mb-8">Arraste os voluntários da lista para os turnos desejados ou use a distribuição automática.</p>
+    <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs">
+      {getInitials(volunteer.name)}
+    </div>
+  )
+}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Coluna de Voluntários */}
-        <ShiftDroppable id="available-volunteers">
-            <div className="md:col-span-1 p-4 bg-gray-100 rounded-lg h-fit">
-            <h2 className="text-xl font-semibold mb-4 text-center">Voluntários Disponíveis</h2>
-            <div className="space-y-2 max-h-[600px] overflow-y-auto scroll-smooth-drag drag-container">
-              {availableVolunteers.map(volunteer => {
-                const usage = getVolunteerUsage(volunteer.id);
-                return (
-                  <VolunteerDraggable key={volunteer.id} id={volunteer.id}>
-                    <div className="p-3 bg-white rounded shadow cursor-grab">
-                      <div className="flex items-center gap-3 mb-2">
-                        <Avatar volunteer={volunteer} />
-                        <div className="flex-1">
-                          <p className="font-medium">{volunteer.name}</p>
-                          <p className="text-xs text-gray-600">{volunteer.congregation}</p>
-                        </div>
-                        {usage.count > 0 && (
-                          <div className="text-right">
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                              {usage.count}x usado
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      {usage.count > 0 && (
-                        <div className="text-xs text-gray-500 border-t pt-2">
-                          <p className="font-medium mb-1">Turnos alocados:</p>
-                          {usage.shifts.map((shift, index) => (
-                            <div key={index} className="mb-1">
-                              • {format(new Date(`${shift.date}T00:00:00`), "dd/MM", { locale: ptBR })} - {shift.location} ({shift.startTime}-{shift.endTime})
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </VolunteerDraggable>
-                );
-              })}
-              {volunteers.length === 0 && <p className="text-center text-gray-500">Nenhum voluntário cadastrado.</p>}
-            </div>
-            </div>
-        </ShiftDroppable>
+export function Allocation() {
+  const { volunteers, shifts, allocations } = useOutletContext<AllocationContext>();
 
-        {/* Coluna de Turnos */}
-        <div className="md:col-span-2 p-4 bg-gray-100 rounded-lg">
-          <div className="flex border-b mb-4">
-            <button 
-                onClick={() => setActiveTab('portaria')}
-                className={`py-2 px-4 font-semibold ${activeTab === 'portaria' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
-            >
-                Portaria
-            </button>
-            <button 
-                onClick={() => setActiveTab('patio')}
-                className={`py-2 px-4 font-semibold ${activeTab === 'patio' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
-            >
-                Pátio
-            </button>
+  // Agrupar turnos por data
+  const shiftsByDate = shifts.reduce((acc, shift) => {
+    if (!acc[shift.date]) {
+      acc[shift.date] = [];
+    }
+    acc[shift.date].push(shift);
+    return acc;
+  }, {} as Record<string, Shift[]>);
+
+  // Ordenar datas
+  const sortedDates = Object.keys(shiftsByDate).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+
+  // Função para determinar a cor do card baseado no status
+  const getShiftCardColor = (shift: Shift) => {
+    const allocatedVolunteers = allocations[shift.id] || [];
+    const allocatedCount = allocatedVolunteers.length;
+    const requiredCount = shift.requiredVolunteers;
+
+    if (allocatedCount === 0) {
+      return 'bg-red-50 border-red-200'; // Vazio - vermelho
+    } else if (allocatedCount < requiredCount) {
+      return 'bg-yellow-50 border-yellow-200'; // Incompleto - amarelo
+    } else {
+      return 'bg-green-50 border-green-200'; // Completo - verde
+    }
+  };
+
+  // Função para obter o ícone de status
+  const getStatusIcon = (shift: Shift) => {
+    const allocatedVolunteers = allocations[shift.id] || [];
+    const allocatedCount = allocatedVolunteers.length;
+    const requiredCount = shift.requiredVolunteers;
+
+    if (allocatedCount === 0) {
+      return <div className="w-3 h-3 bg-red-500 rounded-full"></div>;
+    } else if (allocatedCount < requiredCount) {
+      return <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>;
+    } else {
+      return <div className="w-3 h-3 bg-green-500 rounded-full"></div>;
+    }
+  };
+
+  // Função para obter o nome do dia da semana
+  const getDayName = (date: string) => {
+    const dayOfWeek = format(new Date(`${date}T00:00:00`), "EEEE", {
+      locale: ptBR
+    });
+    return dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Visualização das Alocações</h1>
+        <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <span>Completo</span>
           </div>
-          
-          <div className="flex flex-wrap items-center gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-semibold">Filtrar por:</h3>
-            <select
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="p-2 border rounded border-gray-300"
-            >
-                <option value="all">Todas as Datas</option>
-                {uniqueDates.map(date => (
-                    <option key={date} value={date}>{format(new Date(`${date}T00:00:00`), "dd/MM/yyyy", { locale: ptBR })}</option>
-                ))}
-            </select>
-            <select
-                value={periodFilter}
-                onChange={(e) => setPeriodFilter(e.target.value as any)}
-                className="p-2 border rounded border-gray-300"
-            >
-                <option value="all">Todos os Períodos</option>
-                <option value="Manhã">Manhã</option>
-                <option value="Tarde">Tarde</option>
-            </select>
-            <button
-                onClick={handleClearFilters}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-            >
-                Limpar Filtros
-            </button>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+            <span>Incompleto</span>
           </div>
-
-          <SortableContext items={filteredShifts.map(s => s.id)}>
-            <div className="space-y-4 overflow-y-auto max-h-[600px] scroll-smooth-drag drag-container">
-              {filteredShifts.map(shift => (
-                <SortableShiftItem key={shift.id} id={shift.id}>
-                    <ShiftDroppable id={shift.id}>
-                        <div className="p-4 bg-white rounded shadow">
-                          <div className="font-bold capitalize">{getHumanReadableShiftTitle(shift)}</div>
-                          <div className="text-sm text-gray-600">{shift.startTime} - {shift.endTime}</div>
-                          <div className="mt-2 p-2 border-dashed border-2 rounded-md min-h-[60px] space-y-1">
-                            {(allocations[shift.id] || []).map(volunteerId => {
-                              const volunteer = volunteers.find(v => v.id === volunteerId);
-                              return volunteer ? (
-                                <VolunteerDraggable key={volunteer.id} id={volunteer.id}>
-                                  <div className="p-2 bg-blue-100 rounded text-sm cursor-grab flex items-center gap-2">
-                                    <Avatar volunteer={volunteer} />
-                                    <span className="flex-1">{volunteer.name}</span>
-                                    {volunteer.isTeamLeader && <span title="Líder de Equipe"><Star size={14} className="text-yellow-500" /></span>}
-                                  </div>
-                                </VolunteerDraggable>
-                              ) : null;
-                            })}
-                          </div>
-                        </div>
-                    </ShiftDroppable>
-                </SortableShiftItem>
-              ))}
-              {filteredShifts.length === 0 && <p className="text-center text-gray-500 mt-4">Nenhum turno cadastrado para este local.</p>}
-            </div>
-          </SortableContext>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+            <span>Vazio</span>
+          </div>
         </div>
       </div>
-      
-      <DragOverlay>
-        {activeVolunteer ? (
-          <div className="p-3 bg-white rounded shadow cursor-grab border-2 border-blue-500 opacity-90">
-            <div className="flex items-center gap-3">
-              <Avatar volunteer={activeVolunteer} />
-              <div>
-                <p className="font-medium">{activeVolunteer.name}</p>
-                <p className="text-xs text-gray-600">{activeVolunteer.congregation}</p>
+
+      <div className="space-y-8">
+        {sortedDates.map(date => {
+          const dayShifts = shiftsByDate[date];
+          // Ordenar turnos por horário de início
+          const sortedShifts = dayShifts.sort((a, b) => {
+            // Primeiro por local (portaria antes de patio)
+            if (a.location !== b.location) {
+              return a.location === 'portaria' ? -1 : 1;
+            }
+            // Depois por horário
+            return a.startTime.localeCompare(b.startTime);
+          });
+
+          return (
+            <div key={date} className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {getDayName(date)} - {format(new Date(`${date}T00:00:00`), 'dd/MM/yyyy')}
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sortedShifts.map(shift => {
+                  const allocatedVolunteers = allocations[shift.id] || [];
+                  const allocatedCount = allocatedVolunteers.length;
+                  const requiredCount = shift.requiredVolunteers;
+
+                  return (
+                    <div
+                      key={shift.id}
+                      className={`p-4 rounded-lg border-2 ${getShiftCardColor(shift)}`}
+                    >
+                      {/* Cabeçalho do turno */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(shift)}
+                          <h3 className="font-bold text-lg capitalize flex items-center gap-2">
+                            <MapPin size={16} />
+                            {shift.location}
+                          </h3>
+                        </div>
+                        <div className="text-sm text-gray-600 flex items-center gap-1">
+                          <Users size={14} />
+                          {allocatedCount}/{requiredCount}
+                        </div>
+                      </div>
+
+                      {/* Horário */}
+                      <div className="flex items-center gap-2 mb-3 text-gray-700">
+                        <Clock size={14} />
+                        <span className="text-sm font-medium">
+                          {shift.startTime} - {shift.endTime}
+                        </span>
+                        <span className="text-xs bg-gray-200 px-2 py-1 rounded">
+                          {shift.periodName}
+                        </span>
+                      </div>
+
+                      {/* Lista de voluntários alocados */}
+                      <div className="space-y-2">
+                        {allocatedVolunteers.map(volunteerId => {
+                          const volunteer = volunteers.find(v => v.id === volunteerId);
+                          return volunteer ? (
+                            <div key={volunteer.id} className="flex items-center gap-2 p-2 bg-white rounded border">
+                              <Avatar volunteer={volunteer} />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm truncate">{volunteer.name}</p>
+                                <p className="text-xs text-gray-500 truncate">{volunteer.congregation}</p>
+                              </div>
+                                                             {volunteer.isTeamLeader && (
+                                 <div title="Líder de Equipe">
+                                   <Star size={14} className="text-yellow-500 flex-shrink-0" />
+                                 </div>
+                               )}
+                            </div>
+                          ) : null;
+                        })}
+
+                        {/* Mostrar vagas vazias */}
+                        {Array.from({ length: requiredCount - allocatedCount }).map((_, index) => (
+                          <div key={`empty-${index}`} className="flex items-center gap-2 p-2 bg-gray-100 rounded border-2 border-dashed border-gray-300">
+                            <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                              <Users size={14} className="text-gray-500" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-gray-500 italic">Vaga disponível</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Resumo do status */}
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <div className="text-xs text-gray-600">
+                          {allocatedCount === 0 && (
+                            <span className="text-red-600 font-medium">⚠️ Turno sem voluntários</span>
+                          )}
+                          {allocatedCount > 0 && allocatedCount < requiredCount && (
+                            <span className="text-yellow-600 font-medium">
+                              ⚠️ Faltam {requiredCount - allocatedCount} voluntário(s)
+                            </span>
+                          )}
+                          {allocatedCount === requiredCount && (
+                            <span className="text-green-600 font-medium">✅ Turno completo</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          </div>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+          );
+        })}
+      </div>
+
+      {/* Resumo geral */}
+      <div className="mt-8 bg-gray-50 rounded-lg p-6">
+        <h3 className="text-lg font-bold mb-4">Resumo Geral</h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {(() => {
+            const totalShifts = shifts.length;
+            const completeShifts = shifts.filter(shift => {
+              const allocated = allocations[shift.id] || [];
+              return allocated.length === shift.requiredVolunteers;
+            }).length;
+            const incompleteShifts = shifts.filter(shift => {
+              const allocated = allocations[shift.id] || [];
+              return allocated.length > 0 && allocated.length < shift.requiredVolunteers;
+            }).length;
+            const emptyShifts = shifts.filter(shift => {
+              const allocated = allocations[shift.id] || [];
+              return allocated.length === 0;
+            }).length;
+
+            return (
+              <>
+                <div className="text-center p-4 bg-white rounded-lg">
+                  <div className="text-2xl font-bold text-gray-800">{totalShifts}</div>
+                  <div className="text-sm text-gray-600">Total de Turnos</div>
+                </div>
+                <div className="text-center p-4 bg-green-100 rounded-lg">
+                  <div className="text-2xl font-bold text-green-800">{completeShifts}</div>
+                  <div className="text-sm text-green-600">Turnos Completos</div>
+                </div>
+                <div className="text-center p-4 bg-yellow-100 rounded-lg">
+                  <div className="text-2xl font-bold text-yellow-800">{incompleteShifts}</div>
+                  <div className="text-sm text-yellow-600">Turnos Incompletos</div>
+                </div>
+                <div className="text-center p-4 bg-red-100 rounded-lg">
+                  <div className="text-2xl font-bold text-red-800">{emptyShifts}</div>
+                  <div className="text-sm text-red-600">Turnos Vazios</div>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      </div>
+    </div>
   )
-} 
+}
