@@ -11,10 +11,10 @@ type DashboardContext = {
     shifts: Shift[];
     allocations: Record<string, string[]>;
     captains: Captain[];
-    setVolunteers: React.Dispatch<React.SetStateAction<Volunteer[]>>;
-    setShifts: React.Dispatch<React.SetStateAction<Shift[]>>;
-    setAllocations: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
-    setCaptains: React.Dispatch<React.SetStateAction<Captain[]>>;
+    isReady: boolean;
+    usingFallback: boolean;
+    exportData: () => Promise<any>;
+    importData: (data: any) => Promise<void>;
 }
 
 const StatCard = ({ title, value, description }: { title: string, value: string | number, description: string }) => (
@@ -27,40 +27,38 @@ const StatCard = ({ title, value, description }: { title: string, value: string 
 
 
 export function Dashboard() {
-    const { volunteers, shifts, allocations, captains, setVolunteers, setShifts, setAllocations, setCaptains } = useOutletContext<DashboardContext>();
+    const { volunteers, shifts, allocations, usingFallback, exportData, importData } = useOutletContext<DashboardContext>();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Função para exportar dados para JSON
-    const exportToJSON = () => {
-        const data = {
-            volunteers,
-            shifts,
-            allocations,
-            captains,
-            exportDate: new Date().toISOString(),
-            version: "1.0"
-        };
-
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `parkflow-backup-${format(new Date(), 'dd-MM-yyyy-HH-mm')}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        
-        toast.success('Backup exportado com sucesso!');
+    // Função para exportar dados para JSON usando IndexedDB
+    const exportToJSON = async () => {
+        try {
+            const data = await exportData();
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `parkflow-backup-${format(new Date(), 'dd-MM-yyyy-HH-mm')}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            toast.success('Backup exportado com sucesso!');
+        } catch (error) {
+            console.error('Erro ao exportar backup:', error);
+            toast.error('Erro ao exportar backup');
+        }
     };
 
-    // Função para importar dados do JSON
-    const importFromJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Função para importar dados do JSON usando IndexedDB
+    const importFromJSON = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
                 const content = e.target?.result as string;
                 const data = JSON.parse(content);
@@ -77,24 +75,13 @@ export function Dashboard() {
                     `Voluntários: ${data.volunteers.length}\n` +
                     `Turnos: ${data.shifts.length}\n` +
                     `Alocações: ${Object.values(data.allocations).flat().length}\n` +
-                    `Capitães: ${data.captains?.length || 0}\n\n` +
+                    `Capitães: ${data.captains?.length || 0}\n` +
+                    `Versão: ${data.version || 'Desconhecida'}\n\n` +
                     `ATENÇÃO: Todos os dados atuais serão substituídos!`
                 );
 
                 if (confirmImport) {
-                    // Atualizar todos os estados
-                    setVolunteers(data.volunteers);
-                    setShifts(data.shifts);
-                    setAllocations(data.allocations);
-                    setCaptains(data.captains || []);
-
-                    // Atualizar localStorage diretamente
-                    localStorage.setItem('volunteers', JSON.stringify(data.volunteers));
-                    localStorage.setItem('shifts', JSON.stringify(data.shifts));
-                    localStorage.setItem('allocations', JSON.stringify(data.allocations));
-                    localStorage.setItem('captains', JSON.stringify(data.captains || []));
-
-                    toast.success('Backup importado com sucesso!');
+                    await importData(data);
                 }
             } catch (error) {
                 console.error('Erro ao importar JSON:', error);
@@ -133,7 +120,16 @@ export function Dashboard() {
         <div className="p-2 sm:p-4 lg:p-6">
             {/* Cabeçalho responsivo */}
             <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6 lg:mb-8">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Dashboard</h1>
+                <div className="flex items-center gap-3">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Dashboard</h1>
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium" 
+                         style={{
+                             backgroundColor: usingFallback ? '#fef3c7' : '#d1fae5',
+                             color: usingFallback ? '#92400e' : '#065f46'
+                         }}>
+                        {usingFallback ? '📦 localStorage' : '🗄️ IndexedDB'}
+                    </div>
+                </div>
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button
                         onClick={exportToJSON}
