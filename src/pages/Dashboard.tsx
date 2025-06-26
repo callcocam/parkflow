@@ -6,16 +6,18 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } fro
 import { Download, Upload, Database } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { testSupabaseConnection, checkTables, testInsert } from '../lib/supabase-test';
+import { testAllocations } from '../lib/test-allocations';
 
 type DashboardContext = {
-    volunteers: Volunteer[];
-    shifts: Shift[];
-    allocations: Record<string, string[]>;
-    captains: Captain[];
-    setVolunteers: React.Dispatch<React.SetStateAction<Volunteer[]>>;
-    setShifts: React.Dispatch<React.SetStateAction<Shift[]>>;
-    setAllocations: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
-    setCaptains: React.Dispatch<React.SetStateAction<Captain[]>>;
+  volunteers: Volunteer[];
+  shifts: Shift[];
+  allocations: Record<string, string[]>;
+  captains: Captain[];
+  setVolunteers: React.Dispatch<React.SetStateAction<Volunteer[]>>;
+  setShifts: React.Dispatch<React.SetStateAction<Shift[]>>;
+  setAllocations: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
+  setCaptains: React.Dispatch<React.SetStateAction<Captain[]>>;
+  importBackup?: (file: File) => Promise<void>;
 }
 
 const StatCard = ({ title, value, description }: { title: string, value: string | number, description: string }) => (
@@ -28,7 +30,7 @@ const StatCard = ({ title, value, description }: { title: string, value: string 
 
 
 export function Dashboard() {
-    const { volunteers, shifts, allocations, captains, setVolunteers, setShifts, setAllocations, setCaptains } = useOutletContext<DashboardContext>();
+  const { volunteers, shifts, allocations, captains, setVolunteers, setShifts, setAllocations, setCaptains, importBackup } = useOutletContext<DashboardContext>();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Função para exportar dados para JSON
@@ -56,12 +58,12 @@ export function Dashboard() {
     };
 
     // Função para importar dados do JSON
-    const importFromJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const importFromJSON = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
                 const content = e.target?.result as string;
                 const data = JSON.parse(content);
@@ -83,19 +85,39 @@ export function Dashboard() {
                 );
 
                 if (confirmImport) {
-                    // Atualizar todos os estados
-                    setVolunteers(data.volunteers);
-                    setShifts(data.shifts);
-                    setAllocations(data.allocations);
-                    setCaptains(data.captains || []);
+                    if (importBackup) {
+                        // Usar função híbrida que sincroniza com Supabase
+                        try {
+                            await importBackup(file);
+                        } catch (error) {
+                            console.error('Erro na importação híbrida:', error);
+                            // Fallback para importação local
+                            setVolunteers(data.volunteers);
+                            setShifts(data.shifts);
+                            setAllocations(data.allocations);
+                            setCaptains(data.captains || []);
 
-                    // Atualizar localStorage diretamente
-                    localStorage.setItem('volunteers', JSON.stringify(data.volunteers));
-                    localStorage.setItem('shifts', JSON.stringify(data.shifts));
-                    localStorage.setItem('allocations', JSON.stringify(data.allocations));
-                    localStorage.setItem('captains', JSON.stringify(data.captains || []));
+                            localStorage.setItem('volunteers', JSON.stringify(data.volunteers));
+                            localStorage.setItem('shifts', JSON.stringify(data.shifts));
+                            localStorage.setItem('allocations', JSON.stringify(data.allocations));
+                            localStorage.setItem('captains', JSON.stringify(data.captains || []));
 
-                    toast.success('Backup importado com sucesso!');
+                            toast.success('Backup importado localmente!');
+                        }
+                    } else {
+                        // Fallback para método antigo
+                        setVolunteers(data.volunteers);
+                        setShifts(data.shifts);
+                        setAllocations(data.allocations);
+                        setCaptains(data.captains || []);
+
+                        localStorage.setItem('volunteers', JSON.stringify(data.volunteers));
+                        localStorage.setItem('shifts', JSON.stringify(data.shifts));
+                        localStorage.setItem('allocations', JSON.stringify(data.allocations));
+                        localStorage.setItem('captains', JSON.stringify(data.captains || []));
+
+                        toast.success('Backup importado com sucesso!');
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao importar JSON:', error);
@@ -196,6 +218,12 @@ export function Dashboard() {
                     >
                         <Database size={16} />
                         <span className="sm:inline">🔍 Testar DB</span>
+                    </button>
+                    <button
+                        onClick={() => testAllocations()}
+                        className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-4 py-3 sm:py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+                    >
+                        <span className="sm:inline">🎯 Testar Alocações</span>
                     </button>
                 </div>
             </div>

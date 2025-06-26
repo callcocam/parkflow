@@ -215,6 +215,19 @@ export const allocationService = {
 
   // Adicionar alocação
   async add(shiftId: string, volunteerId: string): Promise<void> {
+    // Verificar se a alocação já existe antes de inserir
+    const { data: existing } = await supabase
+      .from('allocations')
+      .select('id')
+      .eq('shift_id', shiftId)
+      .eq('volunteer_id', volunteerId)
+      .single()
+    
+    if (existing) {
+      console.log('Alocação já existe, pulando inserção')
+      return
+    }
+    
     const { error } = await supabase
       .from('allocations')
       .insert({

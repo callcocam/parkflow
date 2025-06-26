@@ -11,6 +11,8 @@ type AllocationSelectContext = {
   shifts: Shift[];
   allocations: Record<string, string[]>;
   setAllocations: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
+  handleAddAllocation: (shiftId: string, volunteerId: string) => Promise<void>;
+  handleRemoveAllocation: (shiftId: string, volunteerId: string) => Promise<void>;
 }
 
 const Avatar = ({ volunteer }: { volunteer: Volunteer }) => {
@@ -32,7 +34,7 @@ const Avatar = ({ volunteer }: { volunteer: Volunteer }) => {
 }
 
 export function AllocationSelect() {
-  const { volunteers, shifts, allocations, setAllocations } = useOutletContext<AllocationSelectContext>();
+  const { volunteers, shifts, allocations, setAllocations, handleAddAllocation, handleRemoveAllocation } = useOutletContext<AllocationSelectContext>();
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [locationFilter, setLocationFilter] = useState<'all' | 'portaria' | 'patio'>('all');
   const [nameFilter, setNameFilter] = useState<string>('');
@@ -54,21 +56,20 @@ export function AllocationSelect() {
   };
 
   // Função para alterar a alocação de um voluntário
-  const handleShiftChange = useCallback((volunteerId: string, newShiftId: string) => {
+  const handleShiftChange = useCallback(async (volunteerId: string, newShiftId: string) => {
     const volunteerShifts = getVolunteerShifts(volunteerId);
     
     // Se selecionou "Não alocado", remove o voluntário de todos os turnos
     if (newShiftId === '') {
       if (volunteerShifts.length > 0) {
-        setAllocations(prev => {
-          const newAllocations = { ...prev };
-          volunteerShifts.forEach(shiftId => {
-            if (newAllocations[shiftId]) {
-              newAllocations[shiftId] = newAllocations[shiftId].filter(id => id !== volunteerId);
-            }
-          });
-          return newAllocations;
-        });
+        // Remover de todos os turnos usando a função híbrida
+        for (const shiftId of volunteerShifts) {
+          try {
+            await handleRemoveAllocation(shiftId, volunteerId);
+          } catch (error) {
+            console.error(`Erro ao remover voluntário do turno ${shiftId}:`, error);
+          }
+        }
         toast.success('Voluntário removido de todos os turnos');
       }
       return;
@@ -85,30 +86,24 @@ export function AllocationSelect() {
       return;
     }
 
-    // Usar setTimeout para evitar update durante render
-    setTimeout(() => {
-      setAllocations(prev => {
-        const newAllocations = { ...prev };
-
-        // Verifica se o voluntário já está no turno selecionado
-        if (!newAllocations[newShiftId]) {
-          newAllocations[newShiftId] = [];
-        }
-        
-        if (newAllocations[newShiftId].includes(volunteerId)) {
-          // Se já está no turno, remove (toggle)
-          newAllocations[newShiftId] = newAllocations[newShiftId].filter(id => id !== volunteerId);
-          toast.success('Voluntário removido do turno');
-        } else {
-          // Se não está no turno, adiciona
-          newAllocations[newShiftId].push(volunteerId);
-          toast.success('Voluntário alocado com sucesso!');
-        }
-
-        return newAllocations;
-      });
-    }, 0);
-  }, [getVolunteerShifts, shifts, allocations, setAllocations]);
+    // Verificar se o voluntário já está no turno selecionado
+    const isAlreadyInShift = currentVolunteersInShift.includes(volunteerId);
+    
+    try {
+      if (isAlreadyInShift) {
+        // Se já está no turno, remove (toggle)
+        await handleRemoveAllocation(newShiftId, volunteerId);
+        toast.success('Voluntário removido do turno');
+      } else {
+        // Se não está no turno, adiciona
+        await handleAddAllocation(newShiftId, volunteerId);
+        toast.success('Voluntário alocado com sucesso!');
+      }
+    } catch (error) {
+      console.error('Erro ao alterar alocação:', error);
+      toast.error('Erro ao alterar alocação');
+    }
+  }, [getVolunteerShifts, shifts, allocations, handleAddAllocation, handleRemoveAllocation]);
 
   // Função para formatar o turno para exibição
   const formatShiftDisplay = (shift: Shift): string => {
