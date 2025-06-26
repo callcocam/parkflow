@@ -1,9 +1,10 @@
 import { Link, Outlet } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { nanoid } from "nanoid";
-import type { Volunteer, Shift, Captain } from "../types";
+import type { Volunteer, Shift } from "../types";
 import { Toaster } from 'react-hot-toast';
 import { Menu } from 'lucide-react';
+import { useFirebaseOnly } from '../hooks/useFirebaseOnly';
 
 const seedVolunteers: Volunteer[] = [
   { id: 'seed-1', name: 'Tiago Davila Jaques Da Silva', phone: '51998590784', congregation: 'Sul de sapiranga', city: 'Sapiranga', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
@@ -145,84 +146,80 @@ const seedAllocations: Record<string, string[]> = {
   "shift-29-manha-portaria-1": ["seed-31"]
 };
 
-// Helper para carregar do localStorage
-function loadFromLocalStorage<T>(key: string, defaultValue: T): T {
-  try {
-    const storedValue = localStorage.getItem(key);
-    if (storedValue) {
-      return JSON.parse(storedValue);
-    }
-  } catch (error) {
-    console.error(`Erro ao carregar '${key}' do localStorage`, error);
-  }
-  return defaultValue;
-}
-
 export function Root() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [volunteers, setVolunteers] = useState<Volunteer[]>(() => loadFromLocalStorage('volunteers', seedVolunteers));
-  const [shifts, setShifts] = useState<Shift[]>(() => loadFromLocalStorage('shifts', seedShifts));
-  const [captains, setCaptains] = useState<Captain[]>(() => loadFromLocalStorage('captains', []));
-  const [allocations, setAllocations] = useState<Record<string, string[]>>(() => loadFromLocalStorage('allocations', seedAllocations));
-  console.log(allocations)
+  
+  // Usar o hook IndexedDB com dados seed
+  const {
+    volunteers,
+    shifts,
+    allocations,
+    captains,
+    isLoading,
+    isReady,
+    usingFallback,
+    isFirebaseConfigured,
+    isSyncing,
+    lastSyncTime,
+    isOnline,
+    setVolunteers,
+    setShifts,
+    setAllocations,
+    setCaptains,
+    addVolunteer: dbAddVolunteer,
+    updateVolunteer: dbUpdateVolunteer,
+    deleteVolunteer: dbDeleteVolunteer,
+    addShift: dbAddShift,
+    deleteShift: dbDeleteShift,
+    exportData,
+    importData,
+    forceSyncToCloud,
+  } = useFirebaseOnly({
+    volunteers: seedVolunteers,
+    shifts: seedShifts,
+    allocations: seedAllocations,
+    captains: []
+  });
 
-  // Efeitos para salvar no localStorage sempre que o estado mudar
-  useEffect(() => {
-    localStorage.setItem('volunteers', JSON.stringify(volunteers));
-  }, [volunteers]);
+  console.log('🗄️ IndexedDB Status:', { isReady, usingFallback, volunteerCount: volunteers.length });
 
-  useEffect(() => {
-    localStorage.setItem('shifts', JSON.stringify(shifts));
-  }, [shifts]);
-
-  useEffect(() => {
-    localStorage.setItem('captains', JSON.stringify(captains));
-  }, [captains]);
-
-  useEffect(() => {
-    localStorage.setItem('allocations', JSON.stringify(allocations));
-  }, [allocations]);
-
-  const handleAddVolunteer = (volunteerData: Omit<Volunteer, 'id'>) => {
+  const handleAddVolunteer = async (volunteerData: Omit<Volunteer, 'id'>) => {
     const newVolunteer: Volunteer = {
       id: nanoid(),
       ...volunteerData,
     };
-    setVolunteers((prev) => [...prev, newVolunteer]);
+    await dbAddVolunteer(newVolunteer);
   };
 
-  const handleEditVolunteer = (updatedVolunteer: Volunteer) => {
-    setVolunteers((prev) =>
-      prev.map((volunteer) =>
-        volunteer.id === updatedVolunteer.id ? updatedVolunteer : volunteer
-      )
-    );
+  const handleEditVolunteer = async (updatedVolunteer: Volunteer) => {
+    await dbUpdateVolunteer(updatedVolunteer);
   };
 
-  const handleDeleteVolunteer = (id: string) => {
-    setVolunteers((prev) => prev.filter((v) => v.id !== id));
+  const handleDeleteVolunteer = async (id: string) => {
+    await dbDeleteVolunteer(id);
   };
 
-  const handleToggleLeader = (id: string) => {
-    setVolunteers((prev) =>
-      prev.map((volunteer) =>
-        volunteer.id === id
-          ? { ...volunteer, isTeamLeader: !volunteer.isTeamLeader }
-          : volunteer
-      )
-    );
+  const handleToggleLeader = async (id: string) => {
+    const volunteer = volunteers.find(v => v.id === id);
+    if (volunteer) {
+      const updatedVolunteer = { 
+        ...volunteer, 
+        isTeamLeader: !volunteer.isTeamLeader 
+      };
+      await dbUpdateVolunteer(updatedVolunteer);
+    }
   };
 
-  const handleAddShift = (shiftData: Omit<Shift, 'id'>) => {
+  const handleAddShift = async (shiftData: Omit<Shift, 'id'>) => {
     const newShift: Shift = {
       id: nanoid(),
       ...shiftData,
     };
-    setShifts((prev) => [...prev, newShift]);
+    await dbAddShift(newShift);
   };
 
-  const handleDeleteShift = (id: string) => {
-    setShifts((prev) => prev.filter((s) => s.id !== id));
+  const handleDeleteShift = async (id: string) => {
+    await dbDeleteShift(id);
   };
 
 
@@ -235,6 +232,21 @@ export function Root() {
   //     autoAllocatePatioShifts();
   //   }
   // }, [volunteers.length, shifts.length]); // Executa quando volunteers e shifts estão disponíveis
+
+  // Mostrar loading enquanto IndexedDB não estiver pronto
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-lg font-medium text-gray-700">Inicializando banco de dados...</p>
+          <p className="text-sm text-gray-500">
+            {usingFallback ? '📦 Usando localStorage' : '🗄️ Configurando IndexedDB'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex">
@@ -261,7 +273,26 @@ export function Root() {
           volunteers, handleAddVolunteer, handleEditVolunteer, handleDeleteVolunteer, handleToggleLeader, setVolunteers,
           shifts, handleAddShift, handleDeleteShift, setShifts,
           captains, setCaptains,
-          allocations, setAllocations
+          allocations, setAllocations,
+          isReady, 
+          usingFallback,
+          isFirebaseConfigured,
+          isSyncing,
+          lastSyncTime,
+          isOnline,
+          exportData,
+          importData,
+          // configureSync,
+          forceSyncToCloud,
+          // resetSyncConfig,
+          handleAddMultipleShifts: async (shiftsToAdd: Shift[]) => {
+            const shiftsWithIds = shiftsToAdd.map(shift => ({
+              ...shift,
+              id: nanoid()
+            }));
+            const updatedShifts = [...shifts, ...shiftsWithIds];
+            await setShifts(updatedShifts);
+          }
         }} />
       </main>
     </div>

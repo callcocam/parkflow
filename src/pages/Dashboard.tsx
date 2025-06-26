@@ -12,10 +12,10 @@ type DashboardContext = {
     shifts: Shift[];
     allocations: Record<string, string[]>;
     captains: Captain[];
-    setVolunteers: React.Dispatch<React.SetStateAction<Volunteer[]>>;
-    setShifts: React.Dispatch<React.SetStateAction<Shift[]>>;
-    setAllocations: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
-    setCaptains: React.Dispatch<React.SetStateAction<Captain[]>>;
+    isReady: boolean;
+    usingFallback: boolean;
+    exportData: () => Promise<any>;
+    importData: (data: any) => Promise<void>;
 }
 
 const StatCard = ({ title, value, description }: { title: string, value: string | number, description: string }) => (
@@ -28,40 +28,46 @@ const StatCard = ({ title, value, description }: { title: string, value: string 
 
 
 export function Dashboard() {
-    const { volunteers, shifts, allocations, captains, setVolunteers, setShifts, setAllocations, setCaptains } = useOutletContext<DashboardContext>();
+    const { 
+        volunteers, 
+        shifts, 
+        allocations, 
+        usingFallback, 
+        exportData, 
+        importData
+    } = useOutletContext<DashboardContext>();
+    
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Função para exportar dados para JSON
-    const exportToJSON = () => {
-        const data = {
-            volunteers,
-            shifts,
-            allocations,
-            captains,
-            exportDate: new Date().toISOString(),
-            version: "1.0"
-        };
-
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `parkflow-backup-${format(new Date(), 'dd-MM-yyyy-HH-mm')}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        
-        toast.success('Backup exportado com sucesso!');
+    // Função para exportar dados para JSON do Firebase
+    const exportToJSON = async () => {
+        try {
+            const data = await exportData();
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `parkflow-backup-${format(new Date(), 'dd-MM-yyyy-HH-mm')}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            toast.success('Backup exportado com sucesso!');
+        } catch (error) {
+            console.error('Erro ao exportar backup:', error);
+            toast.error('Erro ao exportar backup');
+        }
     };
 
-    // Função para importar dados do JSON
-    const importFromJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Função para importar dados do JSON para o Firebase
+    const importFromJSON = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
                 const content = e.target?.result as string;
                 const data = JSON.parse(content);
@@ -78,24 +84,13 @@ export function Dashboard() {
                     `Voluntários: ${data.volunteers.length}\n` +
                     `Turnos: ${data.shifts.length}\n` +
                     `Alocações: ${Object.values(data.allocations).flat().length}\n` +
-                    `Capitães: ${data.captains?.length || 0}\n\n` +
+                    `Capitães: ${data.captains?.length || 0}\n` +
+                    `Versão: ${data.version || 'Desconhecida'}\n\n` +
                     `ATENÇÃO: Todos os dados atuais serão substituídos!`
                 );
 
                 if (confirmImport) {
-                    // Atualizar todos os estados
-                    setVolunteers(data.volunteers);
-                    setShifts(data.shifts);
-                    setAllocations(data.allocations);
-                    setCaptains(data.captains || []);
-
-                    // Atualizar localStorage diretamente
-                    localStorage.setItem('volunteers', JSON.stringify(data.volunteers));
-                    localStorage.setItem('shifts', JSON.stringify(data.shifts));
-                    localStorage.setItem('allocations', JSON.stringify(data.allocations));
-                    localStorage.setItem('captains', JSON.stringify(data.captains || []));
-
-                    toast.success('Backup importado com sucesso!');
+                    await importData(data);
                 }
             } catch (error) {
                 console.error('Erro ao importar JSON:', error);
@@ -165,7 +160,16 @@ export function Dashboard() {
         <div className="p-2 sm:p-4 lg:p-6">
             {/* Cabeçalho responsivo */}
             <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6 lg:mb-8">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Dashboard</h1>
+                <div className="flex items-center gap-3">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Dashboard</h1>
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium" 
+                         style={{
+                             backgroundColor: usingFallback ? '#fef3c7' : '#d1fae5',
+                             color: usingFallback ? '#92400e' : '#065f46'
+                         }}>
+                        {usingFallback ? '📦 localStorage (Offline)' : '🔥 Firebase'}
+                    </div>
+                </div>
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button
                         onClick={exportToJSON}
@@ -190,14 +194,54 @@ export function Dashboard() {
                         <span className="hidden sm:inline">Importar Backup</span>
                         <span className="sm:hidden">📤 Importar</span>
                     </button>
-                    <button
-                        onClick={testConnection}
-                        className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 sm:py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors"
-                    >
-                        <Database size={16} />
-                        <span className="sm:inline">🔍 Testar DB</span>
-                    </button>
                 </div>
+                
+                {/* Seção de Sincronização Firebase */}
+                {/* <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <Cloud className="h-5 w-5 text-orange-600" />
+                            <h3 className="font-semibold text-gray-900">Sincronização Automática</h3>
+                            {isFirebaseConfigured && isOnline ? (
+                                <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                                    <Wifi className="h-3 w-3" />
+                                    Ativa
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                                    <WifiOff className="h-3 w-3" />
+                                    {!isOnline ? 'Offline' : 'Inativa'}
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="flex-1 text-sm text-gray-600">
+                            {isFirebaseConfigured ? (
+                                <div>
+                                    <p>✅ Dados sincronizam automaticamente entre dispositivos</p>
+                                    {lastSyncTime && (
+                                        <p className="text-xs text-gray-500">
+                                            Última sincronização: {lastSyncTime}
+                                        </p>
+                                    )}
+                                </div>
+                            ) : (
+                                <p>Configure o Firebase para sincronizar dados automaticamente entre dispositivos</p>
+                            )}
+                        </div>
+                        
+                        <div className="flex gap-2">
+                            <button
+                                onClick={forceSyncToCloud}
+                                disabled={isSyncing}
+                                className="bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+                            >
+                                <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                                {isSyncing ? 'Sincronizando...' : 'Sincronizar Tudo'}
+                            </button>
+                        </div>
+                    </div>
+                </div> */}
             </div>
             
             {/* Grid de estatísticas responsivo */}
@@ -286,6 +330,7 @@ export function Dashboard() {
                     )}
                 </div>
             </div>
+
         </div>
     )
 } 
