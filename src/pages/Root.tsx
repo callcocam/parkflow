@@ -27,31 +27,31 @@ const seedVolunteers: Volunteer[] = [
   { id: 'seed-18', name: 'Vanderlei Fontana', phone: '51996088629', congregation: 'Maquiné', city: 'Maquiné', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
   { id: 'seed-19', name: 'Raphael Oliveira Almeida', phone: '51981621967', congregation: 'Central Capão Da Canoa', city: 'Capão da Canoa', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
   { id: 'seed-20', name: 'Albeneir da silva', phone: '51998535105', congregation: 'Sul de Sapiranga', city: 'Sapiranga', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
-  { id: 'seed-21', name: 'Jonas Guilherme de Paulo dos Santos', phone: '51996561141', congregation: 'Ararica', city: 'Ararica', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-22', name: 'Rafael da Silva Lima', phone: '51992593969', congregation: 'Central de Capão da Canoa', city: 'Capão da Canoa', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-23', name: 'Jair dos Santos de Jesús', phone: '51999430592', congregation: 'Sul', city: 'Sapiranga', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-24', name: 'Fabiano Dinstmann', phone: '51980258822', congregation: 'Central Sapiranga', city: 'Sapiranga', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-25', name: 'Pedro José de Oliveira Ferreira', phone: '51995266278', congregation: 'santo Antônio da patrulha', city: 'santo Antônio da patrulha', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-26', name: 'Oilson tadei Luiz', phone: '54999263595', congregation: 'Santo Antônio da patrulha', city: 'Santo Antônio da patrulha', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-27', name: 'Maico Rolim Dias', phone: '51999430204', congregation: 'SAP', city: 'Santo Antônio da patrulha', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-28', name: 'Osvaldo Renato Braga', phone: '51981599664', congregation: 'Central', city: 'Capão da canoa', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-29', name: 'Geovane Barbosa', phone: '75988242932', congregation: 'Central', city: 'Sapiranga', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-30', name: 'Gilmar sander', phone: '51998586938', congregation: 'Central', city: 'Campo Bom', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-31', name: 'Valdoni dos Reis', phone: '51995823555', congregation: 'Sul de Sapiranga', city: 'Sapiranga', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-32', name: 'Sergio Volpi', phone: '51995340686', congregation: 'Sul', city: 'Sapiranga', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-33', name: 'Alessandro Campos', phone: '51999999999', congregation: 'Maquiné', city: 'Maquiné', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-34', name: 'Cláudio', phone: '51999999999', congregation: 'Maquiné', city: 'Maquiné', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-35', name: 'Érico', phone: '51999999999', congregation: 'Central', city: 'Capão da Canoa', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-36', name: 'Marlison', phone: '51999999999', congregation: 'Central', city: 'Capão da Canoa', isTeamLeader: false, imageUrl: '' , unavailableShifts: [] },
-  { id: 'seed-37', name: 'Rubervan', phone: '51999999999', congregation: 'Central', city: 'Central', isTeamLeader: false, imageUrl: '' , unavailableShifts: []},
-  { id: 'seed-38', name: 'Sexta Manhã - Todos os voluntários', phone: '51999999999', congregation: 'Sexta', city: 'Sexta', isTeamLeader: false, imageUrl: '' , unavailableShifts: []},
-  { id: 'seed-39', name: 'Sexta Tarde - Todos os voluntários', phone: '51999999999', congregation: 'Sexta', city: 'Sexta', isTeamLeader: false, imageUrl: '' , unavailableShifts: []},
-  { id: 'seed-40', name: 'Sábado Manhã - Todos os voluntários', phone: '51999999999', congregation: 'Sábado', city: 'Sábado', isTeamLeader: false, imageUrl: '' , unavailableShifts: []},
-  { id: 'seed-41', name: 'Sábado Tarde - Todos os voluntários', phone: '51999999999', congregation: 'Sábado', city: 'Sábado', isTeamLeader: false, imageUrl: '' , unavailableShifts: []},
-  { id: 'seed-42', name: 'Domingo Manhã - Todos os voluntários', phone: '51999999999', congregation: 'Domingo', city: 'Domingo', isTeamLeader: false, imageUrl: '' , unavailableShifts: []},
-  { id: 'seed-43', name: 'Domingo Tarde - Todos os voluntários', phone: '51999999999', congregation: 'Domingo', city: 'Domingo', isTeamLeader: false, imageUrl: '' , unavailableShifts: []},
-  { id: 'seed-44', name: 'Egmar Antonio Rahmeier', phone: '51985485174', congregation: 'Sul', city: 'Sul', isTeamLeader: false, imageUrl: '' , unavailableShifts: []},
-  { id: 'seed-45', name: 'Evonir Boeira', phone: '51984849188', congregation: 'Araricá', city: 'Araricá', isTeamLeader: false, imageUrl: '' , unavailableShifts: []},
+  { id: 'seed-21', name: 'Jonas Guilherme de Paulo dos Santos', phone: '51996561141', congregation: 'Ararica', city: 'Ararica', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-22', name: 'Rafael da Silva Lima', phone: '51992593969', congregation: 'Central de Capão da Canoa', city: 'Capão da Canoa', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-23', name: 'Jair dos Santos de Jesús', phone: '51999430592', congregation: 'Sul', city: 'Sapiranga', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-24', name: 'Fabiano Dinstmann', phone: '51980258822', congregation: 'Central Sapiranga', city: 'Sapiranga', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-25', name: 'Pedro José de Oliveira Ferreira', phone: '51995266278', congregation: 'santo Antônio da patrulha', city: 'santo Antônio da patrulha', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-26', name: 'Oilson tadei Luiz', phone: '54999263595', congregation: 'Santo Antônio da patrulha', city: 'Santo Antônio da patrulha', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-27', name: 'Maico Rolim Dias', phone: '51999430204', congregation: 'SAP', city: 'Santo Antônio da patrulha', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-28', name: 'Osvaldo Renato Braga', phone: '51981599664', congregation: 'Central', city: 'Capão da canoa', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-29', name: 'Geovane Barbosa', phone: '75988242932', congregation: 'Central', city: 'Sapiranga', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-30', name: 'Gilmar sander', phone: '51998586938', congregation: 'Central', city: 'Campo Bom', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-31', name: 'Valdoni dos Reis', phone: '51995823555', congregation: 'Sul de Sapiranga', city: 'Sapiranga', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-32', name: 'Sergio Volpi', phone: '51995340686', congregation: 'Sul', city: 'Sapiranga', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-33', name: 'Alessandro Campos', phone: '51999999999', congregation: 'Maquiné', city: 'Maquiné', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-34', name: 'Cláudio', phone: '51999999999', congregation: 'Maquiné', city: 'Maquiné', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-35', name: 'Érico', phone: '51999999999', congregation: 'Central', city: 'Capão da Canoa', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-36', name: 'Marlison', phone: '51999999999', congregation: 'Central', city: 'Capão da Canoa', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-37', name: 'Rubervan', phone: '51999999999', congregation: 'Central', city: 'Central', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-38', name: 'Sexta Manhã - Todos os voluntários', phone: '51999999999', congregation: 'Sexta', city: 'Sexta', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-39', name: 'Sexta Tarde - Todos os voluntários', phone: '51999999999', congregation: 'Sexta', city: 'Sexta', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-40', name: 'Sábado Manhã - Todos os voluntários', phone: '51999999999', congregation: 'Sábado', city: 'Sábado', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-41', name: 'Sábado Tarde - Todos os voluntários', phone: '51999999999', congregation: 'Sábado', city: 'Sábado', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-42', name: 'Domingo Manhã - Todos os voluntários', phone: '51999999999', congregation: 'Domingo', city: 'Domingo', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-43', name: 'Domingo Tarde - Todos os voluntários', phone: '51999999999', congregation: 'Domingo', city: 'Domingo', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-44', name: 'Egmar Antonio Rahmeier', phone: '51985485174', congregation: 'Sul', city: 'Sul', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
+  { id: 'seed-45', name: 'Evonir Boeira', phone: '51984849188', congregation: 'Araricá', city: 'Araricá', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
 
 
 ];
@@ -60,18 +60,16 @@ const seedVolunteers: Volunteer[] = [
 const seedShifts: Shift[] = [
   // Dia 27/06/2025 - Manhã Sexta-feira Portaria
   { id: 'shift-27-manha-portaria-1', date: '2025-06-27', startTime: '07:00', endTime: '09:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
-  { id: 'shift-27-manha-portaria-2', date: '2025-06-27', startTime: '09:00', endTime: '10:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
-  { id: 'shift-27-manha-portaria-3', date: '2025-06-27', startTime: '10:30', endTime: '12:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
-  { id: 'shift-27-manha-portaria-4', date: '2025-06-27', startTime: '12:00', endTime: '13:30', location: 'portaria', requiredVolunteers: 4, periodName: 'Manhã' },
+  { id: 'shift-27-manha-portaria-2', date: '2025-06-27', startTime: '09:00', endTime: '10:45', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-27-manha-portaria-3', date: '2025-06-27', startTime: '10:45', endTime: '12:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-27-manha-portaria-4', date: '2025-06-27', startTime: '12:30', endTime: '14:00', location: 'portaria', requiredVolunteers: 4, periodName: 'Manhã' },
   // Dia 27/06/2025 - Tarde Sexta-feira Portaria
-  { id: 'shift-27-manha-portaria-5', date: '2025-06-27', startTime: '13:30', endTime: '15:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
-  { id: 'shift-27-tarde-portaria-1', date: '2025-06-27', startTime: '15:00', endTime: '16:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
+  { id: 'shift-27-manha-portaria-5', date: '2025-06-27', startTime: '14:00', endTime: '16:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
   { id: 'shift-27-tarde-portaria-2', date: '2025-06-27', startTime: '16:30', endTime: '18:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
 
   // Dia 27/06/2025 - Manhã Sexta-feira Patio
-  { id: 'shift-27-manha-patio-1', date: '2025-06-27', startTime: '07:00', endTime: '09:00', location: 'patio', requiredVolunteers: 1, periodName: 'Manhã' },
-  { id: 'shift-27-manha-patio-2', date: '2025-06-27', startTime: '09:00', endTime: '10:30', location: 'patio', requiredVolunteers: 2, periodName: 'Manhã' },
-  { id: 'shift-27-manha-patio-3', date: '2025-06-27', startTime: '10:30', endTime: '12:00', location: 'patio', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-27-manha-patio-1', date: '2025-06-27', startTime: '07:00', endTime: '09:45', location: 'patio', requiredVolunteers: 1, periodName: 'Manhã' },
+  { id: 'shift-27-manha-patio-2', date: '2025-06-27', startTime: '09:45', endTime: '11:45', location: 'patio', requiredVolunteers: 2, periodName: 'Manhã' },
   // Dia 27/06/2025 - Tarde Sexta-feira Patio
   { id: 'shift-27-manha-patio-4', date: '2025-06-27', startTime: '13:00', endTime: '14:30', location: 'patio', requiredVolunteers: 2, periodName: 'Tarde' },
   { id: 'shift-27-manha-patio-5', date: '2025-06-27', startTime: '14:30', endTime: '16:00', location: 'patio', requiredVolunteers: 2, periodName: 'Tarde' },
@@ -79,50 +77,42 @@ const seedShifts: Shift[] = [
 
 
 
-
-
-  // Dia 28/06/2025 - Manhã Sábado Portaria
+  // Dia 28/06/2025 - Manhã Sabado Portaria
   { id: 'shift-28-manha-portaria-1', date: '2025-06-28', startTime: '07:00', endTime: '09:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
-  { id: 'shift-28-manha-portaria-2', date: '2025-06-28', startTime: '09:00', endTime: '10:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
-  { id: 'shift-28-manha-portaria-3', date: '2025-06-28', startTime: '10:30', endTime: '12:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
-  { id: 'shift-28-manha-portaria-4', date: '2025-06-28', startTime: '12:00', endTime: '13:30', location: 'portaria', requiredVolunteers: 4, periodName: 'Manhã' },
-  // Dia 28/06/2025 - Tarde Sábado Portaria
-  { id: 'shift-28-manha-portaria-5', date: '2025-06-28', startTime: '13:30', endTime: '15:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
-  { id: 'shift-28-tarde-portaria-1', date: '2025-06-28', startTime: '15:00', endTime: '16:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
+  { id: 'shift-28-manha-portaria-2', date: '2025-06-28', startTime: '09:00', endTime: '10:45', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-28-manha-portaria-3', date: '2025-06-28', startTime: '10:45', endTime: '12:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-28-manha-portaria-4', date: '2025-06-28', startTime: '12:30', endTime: '14:00', location: 'portaria', requiredVolunteers: 4, periodName: 'Manhã' },
+  // Dia 28/06/2025 - Tarde Sabado Portaria
+  { id: 'shift-28-manha-portaria-5', date: '2025-06-28', startTime: '14:00', endTime: '16:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
   { id: 'shift-28-tarde-portaria-2', date: '2025-06-28', startTime: '16:30', endTime: '18:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
 
-  // Dia 28/06/2025 - Manhã Sábado Patio
-  { id: 'shift-28-manha-patio-1', date: '2025-06-28', startTime: '07:00', endTime: '09:00', location: 'patio', requiredVolunteers: 1, periodName: 'Manhã' },
-  { id: 'shift-28-manha-patio-2', date: '2025-06-28', startTime: '09:00', endTime: '10:30', location: 'patio', requiredVolunteers: 2, periodName: 'Manhã' },
-  { id: 'shift-28-manha-patio-3', date: '2025-06-28', startTime: '10:30', endTime: '12:00', location: 'patio', requiredVolunteers: 2, periodName: 'Manhã' },
-  // Dia 28/06/2025 - Tarde Sábado Patio
+  // Dia 28/06/2025 - Manhã Sabado Patio
+  { id: 'shift-28-manha-patio-1', date: '2025-06-28', startTime: '07:00', endTime: '09:45', location: 'patio', requiredVolunteers: 1, periodName: 'Manhã' },
+  { id: 'shift-28-manha-patio-2', date: '2025-06-28', startTime: '09:45', endTime: '11:45', location: 'patio', requiredVolunteers: 2, periodName: 'Manhã' },
+  // Dia 28/06/2025 - Tarde Sabado Patio
   { id: 'shift-28-manha-patio-4', date: '2025-06-28', startTime: '13:00', endTime: '14:30', location: 'patio', requiredVolunteers: 2, periodName: 'Tarde' },
   { id: 'shift-28-manha-patio-5', date: '2025-06-28', startTime: '14:30', endTime: '16:00', location: 'patio', requiredVolunteers: 2, periodName: 'Tarde' },
-  { id: 'shift-28-manha-patio-6', date: '2025-06-28', startTime: '16:00', endTime: '17:30', location: 'patio', requiredVolunteers: 1, periodName: 'Tarde' },
+  { id: 'shift-28-tarde-patio-1', date: '2025-06-28', startTime: '16:00', endTime: '17:30', location: 'patio', requiredVolunteers: 1, periodName: 'Tarde' },
 
 
 
 
   // Dia 29/06/2025 - Manhã Domingo Portaria
   { id: 'shift-29-manha-portaria-1', date: '2025-06-29', startTime: '07:00', endTime: '09:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
-  { id: 'shift-29-manha-portaria-2', date: '2025-06-29', startTime: '09:00', endTime: '10:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
-  { id: 'shift-29-manha-portaria-3', date: '2025-06-29', startTime: '10:30', endTime: '12:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
-  { id: 'shift-29-manha-portaria-4', date: '2025-06-29', startTime: '12:00', endTime: '13:30', location: 'portaria', requiredVolunteers: 4, periodName: 'Manhã' },
+  { id: 'shift-29-manha-portaria-2', date: '2025-06-29', startTime: '09:00', endTime: '10:45', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-29-manha-portaria-3', date: '2025-06-29', startTime: '10:45', endTime: '12:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Manhã' },
+  { id: 'shift-29-manha-portaria-4', date: '2025-06-29', startTime: '12:30', endTime: '14:00', location: 'portaria', requiredVolunteers: 4, periodName: 'Manhã' },
   // Dia 29/06/2025 - Tarde Domingo Portaria
-  { id: 'shift-29-manha-portaria-5', date: '2025-06-29', startTime: '13:30', endTime: '15:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
-  { id: 'shift-29-manha-portaria-6', date: '2025-06-29', startTime: '15:00', endTime: '16:30', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
-  { id: 'shift-29-manha-portaria-7', date: '2025-06-29', startTime: '16:30', endTime: '18:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
+  { id: 'shift-29-manha-portaria-5', date: '2025-06-29', startTime: '14:00', endTime: '16:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
+  { id: 'shift-29-tarde-portaria-2', date: '2025-06-29', startTime: '16:30', endTime: '18:00', location: 'portaria', requiredVolunteers: 2, periodName: 'Tarde' },
 
-
-  // Dia 29/06/2025 - Tarde Domingo Patio
-
-  { id: 'shift-29-manha-patio-1', date: '2025-06-29', startTime: '07:00', endTime: '09:00', location: 'patio', requiredVolunteers: 1, periodName: 'Manhã' },
-  { id: 'shift-29-manha-patio-2', date: '2025-06-29', startTime: '09:00', endTime: '10:30', location: 'patio', requiredVolunteers: 2, periodName: 'Manhã' },
-  { id: 'shift-29-manha-patio-3', date: '2025-06-29', startTime: '10:30', endTime: '12:00', location: 'patio', requiredVolunteers: 2, periodName: 'Manhã' },
+  // Dia 29/06/2025 - Manhã Domingo Patio
+  { id: 'shift-29-manha-patio-1', date: '2025-06-29', startTime: '07:00', endTime: '09:45', location: 'patio', requiredVolunteers: 1, periodName: 'Manhã' },
+  { id: 'shift-29-manha-patio-2', date: '2025-06-29', startTime: '09:45', endTime: '11:45', location: 'patio', requiredVolunteers: 2, periodName: 'Manhã' },
   // Dia 29/06/2025 - Tarde Domingo Patio
   { id: 'shift-29-manha-patio-4', date: '2025-06-29', startTime: '13:00', endTime: '14:30', location: 'patio', requiredVolunteers: 2, periodName: 'Tarde' },
   { id: 'shift-29-manha-patio-5', date: '2025-06-29', startTime: '14:30', endTime: '16:00', location: 'patio', requiredVolunteers: 2, periodName: 'Tarde' },
-  { id: 'shift-29-manha-patio-6', date: '2025-06-29', startTime: '16:00', endTime: '17:30', location: 'patio', requiredVolunteers: 1, periodName: 'Tarde' },
+  { id: 'shift-29-tarde-patio-1', date: '2025-06-29', startTime: '16:00', endTime: '17:30', location: 'patio', requiredVolunteers: 1, periodName: 'Tarde' },
 ];
 
 
@@ -205,7 +195,7 @@ export function Root() {
   const handleDeleteShift = (id: string) => {
     setShifts((prev) => prev.filter((s) => s.id !== id));
   };
- 
+
 
   // Função para alocar automaticamente os voluntários correspondentes nos primeiros e últimos turnos do pátio
   const autoAllocatePatioShifts = () => {
