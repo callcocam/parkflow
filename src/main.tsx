@@ -8,6 +8,7 @@ import { Volunteers } from './pages/Volunteers.tsx'
 import { Shifts } from './pages/Shifts.tsx'
 import { Allocation } from './pages/Allocation.tsx'
 import { AllocationSelect } from './pages/AllocationSelect.tsx'
+import { AllocationShare } from './pages/AllocationShare.tsx'
 import { Captains } from "./pages/Captains.tsx";
 import { Reports } from "./pages/Reports.tsx";
 
@@ -45,6 +46,11 @@ const router = createBrowserRouter([
         element: <Reports />,
       },
     ]
+  },
+  // Rota pública para compartilhamento com voluntários (sem layout)
+  {
+    path: "/escala-publica",
+    element: <AllocationShare />,
   },
 ])
 

@@ -155,6 +155,40 @@ Aqui vamos acompanhar o progresso do desenvolvimento, marcando as tarefas como p
 - ✅ Build funcionando corretamente sem erros
 - ✅ Documentação detalhada de troubleshooting e verificação de deploy
 - ✅ Testes locais implementados para validar configurações SPA
+
+### Fase 13: Página Pública de Escala para Voluntários (Concluída)
+- ✅ Criada nova página `AllocationShare.tsx` para compartilhamento público
+- ✅ Layout completamente independente sem menus laterais ou navegação
+- ✅ Cabeçalho fixo com branding ParkFlow e legendas de status
+- ✅ Cards de turnos com dia da semana incluído em cada card
+- ✅ Design otimizado para visualização pelos voluntários
+- ✅ Carregamento de dados direto do localStorage (sem dependências do contexto)
+- ✅ Layout responsivo completo para todos os dispositivos
+- ✅ Nova rota pública `/escala-publica` acessível sem autenticação
+- ✅ Informações completas dos voluntários: nome, telefone, congregação
+- ✅ Indicadores visuais de vagas disponíveis e status dos turnos
+- ✅ Resumo geral com estatísticas de turnos completos/incompletos/vazios
+- ✅ Rodapé informativo sobre o sistema e contato para atualizações
+- ✅ Botão "Escala Pública" adicionado em todas as páginas principais:
+  - ✅ Dashboard - Menu superior com botões de ação
+  - ✅ Visualização das Alocações - Ao lado do botão PDF
+  - ✅ Voluntários - Ao lado do botão de exportar PDF
+  - ✅ Alocação por Seleção - No cabeçalho da página
+  - ✅ Designar Capitães - No cabeçalho da página
+  - ✅ Gerenciar Turnos - No cabeçalho da página
+- ✅ Link abre em nova aba para facilitar compartilhamento
+- ✅ Build funcionando perfeitamente com todas as alterações
+- ✅ Campo de busca por nome na página pública:
+  - ✅ Input de busca com ícone de lupa no cabeçalho
+  - ✅ Filtro em tempo real dos voluntários exibidos nos cards
+  - ✅ Indicador visual do filtro ativo com opção de limpar
+  - ✅ Busca case-insensitive (maiúsculas/minúsculas)
+  - ✅ Ocultação inteligente de cards vazios durante filtro:
+    - ✅ Cards sem voluntários correspondentes ao filtro não são exibidos
+    - ✅ Dias inteiros são ocultados se não têm resultados
+    - ✅ Mensagem de "nenhum resultado encontrado" por dia
+    - ✅ Mensagem global quando não há resultados em toda a escala
+    - ✅ Botão para limpar filtro e voltar à visualização completa
 - ✅ Otimização completa da responsividade da página Dashboard:
   - ✅ Cabeçalho adaptativo com botões responsivos e textos com emojis em mobile
   - ✅ Grid de estatísticas responsivo (1-2-3 colunas conforme a tela)

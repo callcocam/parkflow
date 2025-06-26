@@ -3,6 +3,7 @@ import { ShiftForm } from "../components/ShiftForm";
 import { ShiftList } from "../components/ShiftList";
 import type { Shift } from "../types";
 import { useState } from "react";
+import { Share2 } from 'lucide-react';
 
 type ShiftsContext = {
   shifts: Shift[];
@@ -30,7 +31,16 @@ export function Shifts() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Gerenciar Turnos</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Gerenciar Turnos</h1>
+        <button
+          onClick={() => window.open('/escala-publica', '_blank')}
+          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+        >
+          <Share2 size={16} />
+          Escala Pública
+        </button>
+      </div>
       <ShiftForm onAddMultipleShifts={handleAddMultipleShifts} />
 
       <div className="mt-8">

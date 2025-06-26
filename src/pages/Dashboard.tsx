@@ -3,7 +3,7 @@ import { useRef } from "react";
 import type { Volunteer, Shift, Captain } from "../types";
 import { format, isAfter, startOfToday, addDays, isBefore } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, Share2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 type DashboardContext = {
@@ -194,6 +194,14 @@ export function Dashboard() {
                         <Upload size={16} />
                         <span className="hidden sm:inline">Importar Backup</span>
                         <span className="sm:hidden">📤 Importar</span>
+                    </button>
+                    <button
+                        onClick={() => window.open('/escala-publica', '_blank')}
+                        className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 sm:py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+                    >
+                        <Share2 size={16} />
+                        <span className="hidden sm:inline">Escala Pública</span>
+                        <span className="sm:hidden">👥 Pública</span>
                     </button>
                 </div>
                 

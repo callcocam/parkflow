@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { Volunteer, Shift } from "../types";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Star, Users, Calendar, Clock, MapPin } from 'lucide-react';
+import { Star, Users, Calendar, Clock, MapPin, Share2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 type AllocationSelectContext = {
@@ -157,6 +157,13 @@ export function AllocationSelect() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Alocação por Seleção</h1>
         <div className="flex gap-4">
+          <button
+            onClick={() => window.open('/escala-publica', '_blank')}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+          >
+            <Share2 size={16} />
+            Escala Pública
+          </button>
           <input
             type="text"
             placeholder="Filtrar por nome..."

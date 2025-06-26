@@ -6,6 +6,7 @@ import { VolunteerList } from "../components/VolunteerList";
 import type { Volunteer, Shift } from "../types";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Share2 } from 'lucide-react';
 
 type VolunteersContext = {
   volunteers: Volunteer[];
@@ -164,6 +165,13 @@ export function Volunteers() {
               disabled={volunteers.length === 0}
             >
               📄 <span className="hidden sm:inline">Exportar PDF</span><span className="sm:hidden">PDF</span>
+            </button>
+            <button
+              onClick={() => window.open('/escala-publica', '_blank')}
+              className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 sm:py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+            >
+              <Share2 size={16} />
+              <span className="hidden sm:inline">Escala Pública</span><span className="sm:hidden">👥 Pública</span>
             </button>
           </div>
         </div>
