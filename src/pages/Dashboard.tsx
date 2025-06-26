@@ -3,7 +3,7 @@ import { useRef } from "react";
 import type { Volunteer, Shift, Captain } from "../types";
 import { format, isAfter, startOfToday, addDays, isBefore } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Download, Upload, Cloud, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 type DashboardContext = {
@@ -13,12 +13,8 @@ type DashboardContext = {
     captains: Captain[];
     isReady: boolean;
     usingFallback: boolean;
-    isFirebaseConfigured: boolean;
-    isSyncing: boolean;
-    lastSyncTime: string | null;
     exportData: () => Promise<any>;
     importData: (data: any) => Promise<void>;
-    forceSyncToCloud: () => Promise<void>;
 }
 
 const StatCard = ({ title, value, description }: { title: string, value: string | number, description: string }) => (
@@ -36,17 +32,13 @@ export function Dashboard() {
         shifts, 
         allocations, 
         usingFallback, 
-        isFirebaseConfigured,
-        isSyncing,
-        lastSyncTime,
         exportData, 
-        importData,
-        forceSyncToCloud
+        importData
     } = useOutletContext<DashboardContext>();
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Função para exportar dados para JSON usando IndexedDB
+    // Função para exportar dados para JSON do Firebase
     const exportToJSON = async () => {
         try {
             const data = await exportData();
@@ -68,7 +60,7 @@ export function Dashboard() {
         }
     };
 
-    // Função para importar dados do JSON usando IndexedDB
+    // Função para importar dados do JSON para o Firebase
     const importFromJSON = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -143,7 +135,7 @@ export function Dashboard() {
                              backgroundColor: usingFallback ? '#fef3c7' : '#d1fae5',
                              color: usingFallback ? '#92400e' : '#065f46'
                          }}>
-                        {usingFallback ? '📦 localStorage' : '🗄️ IndexedDB'}
+                        {usingFallback ? '📦 localStorage (Offline)' : '🔥 Firebase'}
                     </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -170,12 +162,10 @@ export function Dashboard() {
                         <span className="hidden sm:inline">Importar Backup</span>
                         <span className="sm:hidden">📤 Importar</span>
                     </button>
-                    <button
+                    {/* <button
                         onClick={() => {
-                            if (window.confirm('⚠️ ATENÇÃO: Isso irá:\n\n• Limpar TODOS os dados\n• Remover cache PWA\n• Reiniciar aplicação\n\nConfirma?')) {
-                                // Limpar IndexedDB
-                                indexedDB.deleteDatabase('parkflow_db');
-                                // Limpar localStorage
+                            if (window.confirm('⚠️ ATENÇÃO: Isso irá:\n\n• Limpar TODOS os dados locais\n• Remover cache PWA\n• Reiniciar aplicação\n\n⚠️ DADOS NO FIREBASE SERÃO MANTIDOS\n\nConfirma?')) {
+                                // Limpar localStorage apenas
                                 localStorage.clear();
                                 // Limpar cache do service worker
                                 if ('serviceWorker' in navigator) {
@@ -191,16 +181,16 @@ export function Dashboard() {
                     >
                         <span className="hidden sm:inline">🗑️ Reset Completo</span>
                         <span className="sm:hidden">🗑️ Reset</span>
-                    </button>
+                    </button> */}
                 </div>
                 
                 {/* Seção de Sincronização Firebase */}
-                <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4">
+                {/* <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                         <div className="flex items-center gap-2">
                             <Cloud className="h-5 w-5 text-orange-600" />
                             <h3 className="font-semibold text-gray-900">Sincronização Automática</h3>
-                            {isFirebaseConfigured ? (
+                            {isFirebaseConfigured && isOnline ? (
                                 <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
                                     <Wifi className="h-3 w-3" />
                                     Ativa
@@ -208,7 +198,7 @@ export function Dashboard() {
                             ) : (
                                 <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
                                     <WifiOff className="h-3 w-3" />
-                                    Inativa
+                                    {!isOnline ? 'Offline' : 'Inativa'}
                                 </div>
                             )}
                         </div>
@@ -239,7 +229,7 @@ export function Dashboard() {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div> */}
             </div>
             
             {/* Grid de estatísticas responsivo */}

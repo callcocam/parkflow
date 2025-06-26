@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import type { Volunteer, Shift } from "../types";
 import { Toaster } from 'react-hot-toast';
 import { Menu } from 'lucide-react';
-import { useIndexedDB } from '../hooks/useIndexedDB';
+import { useFirebaseOnly } from '../hooks/useFirebaseOnly';
 
 const seedVolunteers: Volunteer[] = [
   { id: 'seed-1', name: 'Tiago Davila Jaques Da Silva', phone: '51998590784', congregation: 'Sul de sapiranga', city: 'Sapiranga', isTeamLeader: false, imageUrl: '', unavailableShifts: [] },
@@ -161,6 +161,7 @@ export function Root() {
     isFirebaseConfigured,
     isSyncing,
     lastSyncTime,
+    isOnline,
     setVolunteers,
     setShifts,
     setAllocations,
@@ -173,7 +174,7 @@ export function Root() {
     exportData,
     importData,
     forceSyncToCloud,
-  } = useIndexedDB({
+  } = useFirebaseOnly({
     volunteers: seedVolunteers,
     shifts: seedShifts,
     allocations: seedAllocations,
@@ -278,6 +279,7 @@ export function Root() {
           isFirebaseConfigured,
           isSyncing,
           lastSyncTime,
+          isOnline,
           exportData,
           importData,
           // configureSync,
