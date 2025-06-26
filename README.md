@@ -168,3 +168,25 @@ Aqui vamos acompanhar o progresso do desenvolvimento, marcando as tarefas como p
     - ✅ Botões com textos adaptativos e emojis contextuais
     - ✅ Feedback visual para horários selecionados com badge azul
     - ✅ Layout flexível que se adapta ao conteúdo disponível
+
+### Fase 12: Integração com Banco de Dados Supabase (Concluída)
+- ✅ Migração do localStorage para banco de dados PostgreSQL (Supabase)
+- ✅ Configuração completa do cliente Supabase com TypeScript
+- ✅ Criação de schema de banco de dados otimizado:
+  - ✅ Tabela `volunteers` com campos completos e arrays para horários indisponíveis
+  - ✅ Tabela `shifts` para gerenciamento de turnos
+  - ✅ Tabela `allocations` para relacionamento muitos-para-muitos
+  - ✅ Tabela `captains` para designação de líderes por data
+  - ✅ Índices de performance para consultas otimizadas
+  - ✅ Triggers automáticos para campos `updated_at`
+  - ✅ Políticas de segurança (RLS) configuradas
+- ✅ Serviços completos de banco de dados implementados:
+  - ✅ `volunteerService` - CRUD completo de voluntários
+  - ✅ `shiftService` - Gerenciamento de turnos
+  - ✅ `allocationService` - Alocações com suporte a importação/exportação
+  - ✅ `captainService` - Designação de capitães por data
+- ✅ Tratamento de erros robusto com mensagens em português
+- ✅ Mapeamento de tipos TypeScript para compatibilidade total
+- ✅ Script SQL completo para setup automático das tabelas
+- ✅ Documentação detalhada de configuração (SUPABASE_SETUP.md)
+- ✅ Compatibilidade mantida com sistema de backup/restauração existente

@@ -3,8 +3,9 @@ import { useRef } from "react";
 import type { Volunteer, Shift, Captain } from "../types";
 import { format, isAfter, startOfToday, addDays, isBefore } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, Database } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { testSupabaseConnection, checkTables, testInsert } from '../lib/supabase-test';
 
 type DashboardContext = {
     volunteers: Volunteer[];
@@ -109,6 +110,37 @@ export function Dashboard() {
         }
     };
 
+    // Função para testar conexão com Supabase
+    const testConnection = async () => {
+        toast.loading('Testando conexão com Supabase...');
+        
+        try {
+            console.log('=== TESTE DE CONEXÃO SUPABASE ===');
+            
+            // Teste 1: Conexão básica
+            const connectionOk = await testSupabaseConnection();
+            
+            // Teste 2: Verificar tabelas
+            await checkTables();
+            
+            // Teste 3: Teste de inserção
+            if (connectionOk) {
+                await testInsert();
+            }
+            
+            toast.dismiss();
+            if (connectionOk) {
+                toast.success('✅ Conexão com Supabase funcionando!');
+            } else {
+                toast.error('❌ Problema na conexão com Supabase. Verifique o console.');
+            }
+        } catch (error) {
+            toast.dismiss();
+            toast.error('❌ Erro ao testar conexão: ' + (error as Error).message);
+            console.error('Erro no teste:', error);
+        }
+    };
+
     const totalAllocations = Object.values(allocations).flat().length;
 
     const congregationCounts = volunteers.reduce((acc, volunteer) => {
@@ -157,6 +189,13 @@ export function Dashboard() {
                         <Upload size={16} />
                         <span className="hidden sm:inline">Importar Backup</span>
                         <span className="sm:hidden">📤 Importar</span>
+                    </button>
+                    <button
+                        onClick={testConnection}
+                        className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 sm:py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+                    >
+                        <Database size={16} />
+                        <span className="sm:inline">🔍 Testar DB</span>
                     </button>
                 </div>
             </div>
