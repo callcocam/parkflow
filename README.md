@@ -122,3 +122,8 @@ Aqui vamos acompanhar o progresso do desenvolvimento, marcando as tarefas como p
 - ✅ Ordenação automática: primeiro por local (portaria antes pátio), depois por horário
 - ✅ Atualização dos dados padrão dos voluntários com horários indisponíveis configurados
 - ✅ Correção das quantidades de voluntários necessários em alguns turnos (padronização)
+- ✅ Geração de PDF detalhado com todos os turnos, voluntários, telefones e congregações
+- ✅ Geração de cards visuais individuais por turno para download como imagem
+- ✅ Compartilhamento direto no WhatsApp com mensagem formatada por turno
+- ✅ Cards com design moderno e gradient, incluindo todos os dados dos voluntários
+- ✅ Integração com WhatsApp Web para envio automático das escalas
