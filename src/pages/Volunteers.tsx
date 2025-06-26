@@ -144,27 +144,31 @@ export function Volunteers() {
   };
 
       return (
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Gerenciar Voluntários</h1>
-          <div className="flex gap-3 items-center">
-            <input
-              type="text"
-              placeholder="Filtrar por nome..."
-              value={nameFilter}
-              onChange={(e) => setNameFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            />
+      <div className="p-2 sm:p-4 lg:p-6">
+        {/* Cabeçalho responsivo */}
+        <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold">Gerenciar Voluntários</h1>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-center">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="🔍 Filtrar por nome..."
+                value={nameFilter}
+                onChange={(e) => setNameFilter(e.target.value)}
+                className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+            </div>
             <button
               onClick={exportToPDF}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+              className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-3 sm:py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={volunteers.length === 0}
             >
-              📄 Exportar PDF
+              📄 <span className="hidden sm:inline">Exportar PDF</span><span className="sm:hidden">PDF</span>
             </button>
           </div>
         </div>
-              <VolunteerForm 
+        
+        <VolunteerForm 
           onAddVolunteer={handleAddVolunteer} 
           onEditVolunteer={handleEditSubmit}
           existingVolunteers={volunteers} 

@@ -141,51 +141,78 @@ export function VolunteerForm({ onAddVolunteer, onEditVolunteer, existingVolunte
     };
 
     return (
-        <form onSubmit={handleSubmit} className="p-4 mb-8 border rounded-lg bg-white shadow-md">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">
-                    {editingVolunteer ? 'Editar Voluntário' : 'Adicionar Novo Voluntário'}
+        <form onSubmit={handleSubmit} className="p-3 sm:p-4 lg:p-6 mb-6 sm:mb-8 border rounded-lg bg-white shadow-md">
+            {/* Cabeçalho do formulário */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-bold">
+                    {editingVolunteer ? '✏️ Editar Voluntário' : '➕ Adicionar Novo Voluntário'}
                 </h2>
                 {editingVolunteer && onCancelEdit && (
                     <button
                         type="button"
                         onClick={onCancelEdit}
-                        className="px-3 py-1 text-sm bg-gray-500 text-white rounded hover:bg-gray-600"
+                        className="w-full sm:w-auto px-3 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
                     >
-                        Cancelar
+                        ❌ Cancelar
                     </button>
                 )}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-center">
-                <input
-                    type="text"
-                    placeholder="Nome Completo"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full p-2 border rounded border-gray-300"
-                />
-                <input
-                    type="text"
-                    placeholder="Telefone"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full p-2 border rounded border-gray-300"
-                />
-                <input
-                    type="text"
-                    placeholder="Congregação"
-                    value={congregation}
-                    onChange={(e) => setCongregation(e.target.value)}
-                    className="w-full p-2 border rounded border-gray-300"
-                />
-                <input
-                    type="text"
-                    placeholder="Cidade"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="w-full p-2 border rounded border-gray-300"
-                />
-                <div className="flex items-center gap-2">
+            
+            {/* Grid de campos principais - responsivo */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="sm:col-span-2 lg:col-span-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Nome Completo *
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="Digite o nome completo"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full p-3 sm:p-2 border rounded border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                </div>
+                
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Telefone *
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="(11) 99999-9999"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full p-3 sm:p-2 border rounded border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                </div>
+                
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Congregação *
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="Nome da congregação"
+                        value={congregation}
+                        onChange={(e) => setCongregation(e.target.value)}
+                        className="w-full p-3 sm:p-2 border rounded border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                </div>
+                
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Cidade *
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="Nome da cidade"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        className="w-full p-3 sm:p-2 border rounded border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                </div>
+                
+                <div className="flex items-center gap-2 p-3 sm:p-2 bg-gray-50 rounded border">
                      <input
                         type="checkbox"
                         id="isTeamLeader"
@@ -193,10 +220,15 @@ export function VolunteerForm({ onAddVolunteer, onEditVolunteer, existingVolunte
                         onChange={(e) => setIsTeamLeader(e.target.checked)}
                         className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <label htmlFor="isTeamLeader" className="font-medium text-gray-700">Líder de Equipe</label>
+                    <label htmlFor="isTeamLeader" className="font-medium text-gray-700 text-sm">
+                        ⭐ Líder de Equipe
+                    </label>
                 </div>
+                
                 <div>
-                    <label htmlFor="photo" className="block text-sm font-medium text-gray-700 mb-1">Foto (opcional)</label>
+                    <label htmlFor="photo" className="block text-sm font-medium text-gray-700 mb-1">
+                        📷 Foto (opcional)
+                    </label>
                     <input
                         type="file"
                         id="photo"
@@ -207,37 +239,61 @@ export function VolunteerForm({ onAddVolunteer, onEditVolunteer, existingVolunte
                  </div>
             </div>
             
-            {/* Select múltiplo para horários indisponíveis */}
-            <div className="mt-4">
+            {/* Seção de horários indisponíveis - responsiva */}
+            <div className="mb-4 sm:mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Horários Indisponíveis (opcional)
+                    🕐 Horários Indisponíveis (opcional)
                 </label>
-                <div className="max-h-40 overflow-y-auto border border-gray-300 rounded p-2 bg-gray-50">
-                    {shifts.map(shift => (
-                        <div key={shift.id} className="flex items-center mb-2">
-                            <input
-                                type="checkbox"
-                                id={`shift-${shift.id}`}
-                                checked={unavailableShifts.includes(shift.id)}
-                                onChange={(e) => handleUnavailableShiftChange(shift.id, e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-                            />
-                            <label htmlFor={`shift-${shift.id}`} className="text-sm text-gray-700">
-                                {formatShiftDisplay(shift)}
-                            </label>
+                <div className="max-h-32 sm:max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-gray-50">
+                    {shifts.length === 0 ? (
+                        <p className="text-sm text-gray-500 text-center py-4">
+                            Nenhum turno cadastrado ainda
+                        </p>
+                    ) : (
+                        <div className="space-y-2">
+                            {shifts.map(shift => (
+                                <div key={shift.id} className="flex items-start gap-2 p-2 hover:bg-white rounded transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        id={`shift-${shift.id}`}
+                                        checked={unavailableShifts.includes(shift.id)}
+                                        onChange={(e) => handleUnavailableShiftChange(shift.id, e.target.checked)}
+                                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-0.5 flex-shrink-0"
+                                    />
+                                    <label htmlFor={`shift-${shift.id}`} className="text-sm text-gray-700 leading-tight cursor-pointer">
+                                        {formatShiftDisplay(shift)}
+                                    </label>
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    )}
                 </div>
                 {unavailableShifts.length > 0 && (
-                    <p className="text-xs text-gray-500 mt-1">
-                        {unavailableShifts.length} horário(s) selecionado(s) como indisponível(is)
-                    </p>
+                    <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
+                        <p className="text-xs text-blue-700">
+                            ✅ {unavailableShifts.length} horário(s) marcado(s) como indisponível(is)
+                        </p>
+                    </div>
                 )}
             </div>
 
-            <button type="submit" className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                {editingVolunteer ? 'Atualizar Voluntário' : 'Adicionar Voluntário'}
-            </button>
+            {/* Botão de submit responsivo */}
+            <div className="flex justify-end">
+                <button 
+                    type="submit" 
+                    className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                    {editingVolunteer ? (
+                        <>
+                            💾 <span className="hidden sm:inline">Atualizar Voluntário</span><span className="sm:hidden">Atualizar</span>
+                        </>
+                    ) : (
+                        <>
+                            ➕ <span className="hidden sm:inline">Adicionar Voluntário</span><span className="sm:hidden">Adicionar</span>
+                        </>
+                    )}
+                </button>
+            </div>
         </form>
     );
 } 
