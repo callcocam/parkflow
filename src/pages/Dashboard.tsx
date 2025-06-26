@@ -3,9 +3,8 @@ import { useRef } from "react";
 import type { Volunteer, Shift, Captain } from "../types";
 import { format, isAfter, startOfToday, addDays, isBefore } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Download, Upload, Database } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { testSupabaseConnection, checkTables, testInsert } from '../lib/supabase-test';
 
 type DashboardContext = {
     volunteers: Volunteer[];
@@ -105,7 +104,8 @@ export function Dashboard() {
         }
     };
 
-    // Função para testar conexão com Supabase
+    // Função para testar conexão com Supabase (não utilizada no momento)
+    /*
     const testConnection = async () => {
         toast.loading('Testando conexão com Supabase...');
         
@@ -135,6 +135,7 @@ export function Dashboard() {
             console.error('Erro no teste:', error);
         }
     };
+    */
 
     const totalAllocations = Object.values(allocations).flat().length;
 

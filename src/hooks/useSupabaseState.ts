@@ -67,9 +67,9 @@ export function useSupabaseState() {
         phone: v.phone,
         congregation: v.congregation,
         city: v.city,
-        isTeamLeader: v.is_team_leader,
-        imageUrl: v.image_url || '',
-        unavailableShifts: v.unavailable_shifts || []
+        isTeamLeader: v.isTeamLeader,
+        imageUrl: v.imageUrl || '',
+        unavailableShifts: v.unavailableShifts || []
       }));
       
       setVolunteers(mappedVolunteers);
@@ -96,11 +96,11 @@ export function useSupabaseState() {
       const mappedShifts: Shift[] = data.map(s => ({
         id: s.id,
         date: s.date,
-        startTime: s.start_time,
-        endTime: s.end_time,
+        startTime: s.startTime,
+        endTime: s.endTime,
         location: s.location,
-        requiredVolunteers: s.required_volunteers,
-        periodName: s.period_name
+        requiredVolunteers: s.requiredVolunteers,
+        periodName: s.periodName
       }));
       
       setShifts(mappedShifts);
@@ -125,12 +125,14 @@ export function useSupabaseState() {
       
       // Converter para o formato Record<string, string[]>
       const mappedAllocations: Record<string, string[]> = {};
-      data.forEach(allocation => {
-        if (!mappedAllocations[allocation.shift_id]) {
-          mappedAllocations[allocation.shift_id] = [];
-        }
-        mappedAllocations[allocation.shift_id].push(allocation.volunteer_id);
-      });
+      if (Array.isArray(data)) {
+        data.forEach(allocation => {
+          if (!mappedAllocations[allocation.shift_id]) {
+            mappedAllocations[allocation.shift_id] = [];
+          }
+          mappedAllocations[allocation.shift_id].push(allocation.volunteer_id);
+        });
+      }
       
       setAllocations(mappedAllocations);
       saveToLocalStorage('allocations', mappedAllocations);
@@ -156,7 +158,8 @@ export function useSupabaseState() {
       const mappedCaptains: Captain[] = data.map(c => ({
         id: c.id,
         date: c.date,
-        volunteerId: c.volunteer_id
+        location: c.location || 'portaria',
+        volunteerId: c.volunteerId
       }));
       
       setCaptains(mappedCaptains);

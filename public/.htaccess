@@ -1,0 +1,19 @@
+Options -Indexes
+Options -MultiViews
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+
+# Cache estático por 1 ano
+<filesMatch "\.(css|js|woff|woff2|ttf|svg|png|jpg|jpeg|gif|ico)$">
+    ExpiresActive On
+    ExpiresDefault "access plus 1 year"
+</filesMatch>
+
+# Cache do index.html por 5 minutos
+<filesMatch "\.html$">
+    ExpiresActive On
+    ExpiresDefault "access plus 5 minutes"
+</filesMatch> 

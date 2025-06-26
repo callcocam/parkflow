@@ -9,7 +9,7 @@ export async function testSupabaseConnection() {
     console.log('✅ Cliente Supabase criado')
     
     // Teste 2: Tentar fazer uma consulta simples (corrigida)
-    const { data, error, count } = await supabase
+    const { error, count } = await supabase
       .from('volunteers')
       .select('*', { count: 'exact', head: true })
     
@@ -41,7 +41,7 @@ export async function checkTables() {
   
   for (const table of tables) {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from(table)
         .select('*')
         .limit(1)
