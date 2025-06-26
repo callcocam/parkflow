@@ -18,7 +18,7 @@ type DashboardContext = {
     lastSyncTime: string | null;
     exportData: () => Promise<any>;
     importData: (data: any) => Promise<void>;
-
+    forceSyncToCloud: () => Promise<void>;
 }
 
 const StatCard = ({ title, value, description }: { title: string, value: string | number, description: string }) => (
@@ -40,7 +40,8 @@ export function Dashboard() {
         isSyncing,
         lastSyncTime,
         exportData, 
-        importData
+        importData,
+        forceSyncToCloud
     } = useOutletContext<DashboardContext>();
     
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -227,12 +228,16 @@ export function Dashboard() {
                             )}
                         </div>
                         
-                        {isSyncing && (
-                            <div className="flex items-center gap-2 text-sm text-orange-600">
-                                <RefreshCw className="h-4 w-4 animate-spin" />
-                                Sincronizando...
-                            </div>
-                        )}
+                        <div className="flex gap-2">
+                            <button
+                                onClick={forceSyncToCloud}
+                                disabled={isSyncing}
+                                className="bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+                            >
+                                <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                                {isSyncing ? 'Sincronizando...' : 'Forçar Sync'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

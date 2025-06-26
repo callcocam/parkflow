@@ -43,7 +43,8 @@ interface UseIndexedDBReturn {
   exportData: () => Promise<any>;
   importData: (data: any) => Promise<void>;
   
-
+  // Sincronização Firebase
+  forceSyncToCloud: () => Promise<void>;
 }
 
 export function useIndexedDB(seedData?: {
@@ -478,7 +479,24 @@ export function useIndexedDB(seedData?: {
     }
   };
 
-
+  // === MÉTODOS DE SINCRONIZAÇÃO ===
+  const forceSyncToCloud = async () => {
+    if (!isFirebaseConfiguredState) {
+      toast.error('Firebase não configurado');
+      return;
+    }
+    
+    setIsSyncing(true);
+    try {
+      await syncToCloud();
+      toast.success('📤 Dados enviados para nuvem!');
+    } catch (error) {
+      console.error('Erro ao forçar sincronização:', error);
+      toast.error('Erro ao sincronizar');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   return {
     // Estados
@@ -510,6 +528,9 @@ export function useIndexedDB(seedData?: {
     
     // Backup/Restore
     exportData,
-    importData
+    importData,
+    
+    // Sincronização Firebase
+    forceSyncToCloud
   };
 } 
