@@ -1,5 +1,5 @@
 import { useOutletContext } from "react-router-dom";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import type { Volunteer, Shift } from "../types";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -54,7 +54,7 @@ export function AllocationSelect() {
   };
 
   // Função para alterar a alocação de um voluntário
-  const handleShiftChange = (volunteerId: string, newShiftId: string) => {
+  const handleShiftChange = useCallback((volunteerId: string, newShiftId: string) => {
     const volunteerShifts = getVolunteerShifts(volunteerId);
     
     // Se selecionou "Não alocado", remove o voluntário de todos os turnos
@@ -63,7 +63,9 @@ export function AllocationSelect() {
         setAllocations(prev => {
           const newAllocations = { ...prev };
           volunteerShifts.forEach(shiftId => {
-            newAllocations[shiftId] = newAllocations[shiftId].filter(id => id !== volunteerId);
+            if (newAllocations[shiftId]) {
+              newAllocations[shiftId] = newAllocations[shiftId].filter(id => id !== volunteerId);
+            }
           });
           return newAllocations;
         });
@@ -83,29 +85,30 @@ export function AllocationSelect() {
       return;
     }
 
-    // Validação removida: agora permite múltiplos turnos por dia para o mesmo voluntário
+    // Usar setTimeout para evitar update durante render
+    setTimeout(() => {
+      setAllocations(prev => {
+        const newAllocations = { ...prev };
 
-    setAllocations(prev => {
-      const newAllocations = { ...prev };
+        // Verifica se o voluntário já está no turno selecionado
+        if (!newAllocations[newShiftId]) {
+          newAllocations[newShiftId] = [];
+        }
+        
+        if (newAllocations[newShiftId].includes(volunteerId)) {
+          // Se já está no turno, remove (toggle)
+          newAllocations[newShiftId] = newAllocations[newShiftId].filter(id => id !== volunteerId);
+          toast.success('Voluntário removido do turno');
+        } else {
+          // Se não está no turno, adiciona
+          newAllocations[newShiftId].push(volunteerId);
+          toast.success('Voluntário alocado com sucesso!');
+        }
 
-      // Verifica se o voluntário já está no turno selecionado
-      if (!newAllocations[newShiftId]) {
-        newAllocations[newShiftId] = [];
-      }
-      
-      if (newAllocations[newShiftId].includes(volunteerId)) {
-        // Se já está no turno, remove (toggle)
-        newAllocations[newShiftId] = newAllocations[newShiftId].filter(id => id !== volunteerId);
-        toast.success('Voluntário removido do turno');
-      } else {
-        // Se não está no turno, adiciona
-        newAllocations[newShiftId].push(volunteerId);
-        toast.success('Voluntário alocado com sucesso!');
-      }
-
-      return newAllocations;
-    });
-  };
+        return newAllocations;
+      });
+    }, 0);
+  }, [getVolunteerShifts, shifts, allocations, setAllocations]);
 
   // Função para formatar o turno para exibição
   const formatShiftDisplay = (shift: Shift): string => {

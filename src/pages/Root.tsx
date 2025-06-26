@@ -240,7 +240,8 @@ export function Root() {
 
   // Sincronização inicial dos dados seed
   useEffect(() => {
-    const performInitialSync = async () => {
+    // Evitar chamadas durante renderização usando setTimeout
+    const timer = setTimeout(async () => {
       if (!isLoading && volunteers.length >= 0) {
         try {
           await syncAllData(seedVolunteers, seedShifts, seedAllocations, []);
@@ -248,9 +249,9 @@ export function Root() {
           console.error('Erro na sincronização inicial:', error);
         }
       }
-    };
+    }, 0);
 
-    performInitialSync();
+    return () => clearTimeout(timer);
   }, [isLoading, volunteers.length, syncAllData]);
 
   // Operações de turnos agora são gerenciadas pelo hook useShiftOperations
