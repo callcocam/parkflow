@@ -154,6 +154,28 @@ export function Dashboard() {
                         <span className="hidden sm:inline">Importar Backup</span>
                         <span className="sm:hidden">📤 Importar</span>
                     </button>
+                    <button
+                        onClick={() => {
+                            if (window.confirm('⚠️ ATENÇÃO: Isso irá:\n\n• Limpar TODOS os dados\n• Remover cache PWA\n• Reiniciar aplicação\n\nConfirma?')) {
+                                // Limpar IndexedDB
+                                indexedDB.deleteDatabase('parkflow_db');
+                                // Limpar localStorage
+                                localStorage.clear();
+                                // Limpar cache do service worker
+                                if ('serviceWorker' in navigator) {
+                                    navigator.serviceWorker.getRegistrations().then(registrations => {
+                                        registrations.forEach(registration => registration.unregister());
+                                    });
+                                }
+                                // Recarregar página
+                                window.location.reload();
+                            }
+                        }}
+                        className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-3 sm:py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+                    >
+                        <span className="hidden sm:inline">🗑️ Reset Completo</span>
+                        <span className="sm:hidden">🗑️ Reset</span>
+                    </button>
                 </div>
             </div>
             

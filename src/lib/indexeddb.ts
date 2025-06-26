@@ -2,7 +2,7 @@ import type { Volunteer, Shift, Captain } from '../types';
 
 // Configuração do banco de dados
 const DB_NAME = 'parkflow_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Incrementada para forçar migração
 
 // Nome das tabelas (object stores)
 export const STORES = {
