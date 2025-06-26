@@ -74,3 +74,17 @@ Aqui vamos acompanhar o progresso do desenvolvimento, marcando as tarefas como p
 - ✅ Sistema executa alocação automática na inicialização da aplicação
 - ✅ Cada turno especial recebe o voluntário correspondente ao dia/período
 - ✅ Turnos especiais do pátio aparecem como "CHEIO" na interface de seleção
+
+### Fase 8: Gestão de Disponibilidade de Voluntários (Concluída)
+- ✅ Adicionada propriedade `unavailableShifts` ao tipo Volunteer para armazenar horários indisponíveis
+- ✅ Implementado modo de edição no formulário de voluntários com:
+  - ✅ Preenchimento automático dos campos ao editar
+  - ✅ Select múltiplo para marcar horários indisponíveis
+  - ✅ Visualização clara dos turnos com data, horário e local
+  - ✅ Botão de cancelar edição
+- ✅ Adicionado botão de editar na lista de voluntários
+- ✅ Implementada função de edição no contexto da aplicação
+- ✅ Filtro inteligente na interface de alocação:
+  - ✅ Voluntários indisponíveis não veem opções de turnos conflitantes
+  - ✅ Turnos já alocados mostram status "INDISPONÍVEL" quando aplicável
+  - ✅ Sistema preserva alocações existentes mesmo com conflitos de disponibilidade

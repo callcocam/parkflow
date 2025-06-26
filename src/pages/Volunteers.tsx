@@ -20,6 +20,7 @@ type VolunteersContext = {
 export function Volunteers() {
   const { volunteers, handleAddVolunteer, handleEditVolunteer, handleDeleteVolunteer, handleToggleLeader, shifts, allocations } = useOutletContext<VolunteersContext>();
   const [editingVolunteer, setEditingVolunteer] = useState<Volunteer | null>(null);
+  const [nameFilter, setNameFilter] = useState<string>('');
 
   const handleEditClick = (volunteer: Volunteer) => {
     setEditingVolunteer(volunteer);
@@ -33,6 +34,12 @@ export function Volunteers() {
     handleEditVolunteer(volunteer);
     setEditingVolunteer(null);
   };
+
+  // Filtrar voluntários baseado no filtro de nome
+  const filteredVolunteers = volunteers.filter(volunteer => {
+    if (nameFilter.trim() === '') return true;
+    return volunteer.name.toLowerCase().includes(nameFilter.toLowerCase());
+  });
 
   // Função para obter o turno de um voluntário
   const getVolunteerShift = (volunteerId: string) => {
@@ -136,32 +143,41 @@ export function Volunteers() {
     doc.save(fileName);
   };
 
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Gerenciar Voluntários</h1>
-        <button
-          onClick={exportToPDF}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
-          disabled={volunteers.length === 0}
-        >
-          📄 Exportar PDF
-        </button>
-      </div>
-      <VolunteerForm 
-        onAddVolunteer={handleAddVolunteer} 
-        onEditVolunteer={handleEditSubmit}
-        existingVolunteers={volunteers} 
-        shifts={shifts}
-        editingVolunteer={editingVolunteer}
-        onCancelEdit={handleCancelEdit}
-      />
-      <VolunteerList 
-        volunteers={volunteers} 
-        onDeleteVolunteer={handleDeleteVolunteer} 
-        onToggleLeader={handleToggleLeader} 
-        onEditVolunteer={handleEditClick}
-      />
+      return (
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">Gerenciar Voluntários</h1>
+          <div className="flex gap-3 items-center">
+            <input
+              type="text"
+              placeholder="Filtrar por nome..."
+              value={nameFilter}
+              onChange={(e) => setNameFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            />
+            <button
+              onClick={exportToPDF}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
+              disabled={volunteers.length === 0}
+            >
+              📄 Exportar PDF
+            </button>
+          </div>
+        </div>
+              <VolunteerForm 
+          onAddVolunteer={handleAddVolunteer} 
+          onEditVolunteer={handleEditSubmit}
+          existingVolunteers={volunteers} 
+          shifts={shifts}
+          editingVolunteer={editingVolunteer}
+          onCancelEdit={handleCancelEdit}
+        />
+        <VolunteerList 
+          volunteers={filteredVolunteers} 
+          onDeleteVolunteer={handleDeleteVolunteer} 
+          onToggleLeader={handleToggleLeader} 
+          onEditVolunteer={handleEditClick}
+        />
     </div>
   );
 } 
