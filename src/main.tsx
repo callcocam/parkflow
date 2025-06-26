@@ -7,6 +7,7 @@ import { Dashboard } from './pages/Dashboard.tsx'
 import { Volunteers } from './pages/Volunteers.tsx'
 import { Shifts } from './pages/Shifts.tsx'
 import { Allocation } from './pages/Allocation.tsx'
+import { AllocationSelect } from './pages/AllocationSelect.tsx'
 import { Captains } from "./pages/Captains.tsx";
 import { Reports } from "./pages/Reports.tsx";
 
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
       {
         path: "/allocation",
         element: <Allocation />,
+      },
+      {
+        path: "/allocation-select",
+        element: <AllocationSelect />,
       },
       {
         path: "/captains",

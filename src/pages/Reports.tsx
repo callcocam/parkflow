@@ -1,5 +1,5 @@
 import { useOutletContext } from 'react-router-dom';
-import type { AllocationContext, Volunteer, Shift } from '../types';
+import type { AllocationContext, Volunteer } from '../types';
 
 export function Reports() {
   const { volunteers, shifts, allocations } = useOutletContext<AllocationContext>();

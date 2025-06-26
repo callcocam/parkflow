@@ -9,7 +9,7 @@ import { SortableShiftItem } from "../components/SortableShiftItem";
 import toast from 'react-hot-toast';
 import { format } from 'date-fns-tz';
 import { ptBR } from 'date-fns/locale';
-import { Star, X } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 // Contexto completo vindo do Root
 type AllocationContext = {
@@ -182,8 +182,7 @@ export function Allocation() {
   const findShiftOfVolunteer = (volunteerId: string, currentAllocations: Record<string, string[]>) => {
     return Object.keys(currentAllocations).find(shiftId => currentAllocations[shiftId].includes(volunteerId));
   }
-
-  const allocatedVolunteerIds = new Set(Object.values(allocations).flat());
+ 
   const availableVolunteers = volunteers; // Mostrar todos os voluntários sempre
 
   // Função para calcular uso de cada voluntário

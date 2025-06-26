@@ -1,10 +1,11 @@
 import type { Volunteer } from "../types";
-import { Trash2, Star } from "lucide-react";
+import { Trash2, Star, Edit } from "lucide-react";
 
 interface VolunteerListProps {
     volunteers: Volunteer[];
     onDeleteVolunteer: (id: string) => void;
     onToggleLeader: (id: string) => void;
+    onEditVolunteer?: (volunteer: Volunteer) => void;
 }
 
 const Avatar = ({ volunteer }: { volunteer: Volunteer }) => {
@@ -25,7 +26,7 @@ const Avatar = ({ volunteer }: { volunteer: Volunteer }) => {
     )
 }
 
-export function VolunteerList({ volunteers, onDeleteVolunteer, onToggleLeader }: VolunteerListProps) {
+export function VolunteerList({ volunteers, onDeleteVolunteer, onToggleLeader, onEditVolunteer }: VolunteerListProps) {
     if (volunteers.length === 0) {
         return <p className="text-center text-gray-500 mt-8">Nenhum voluntário cadastrado ainda.</p>;
     }
@@ -73,13 +74,26 @@ export function VolunteerList({ volunteers, onDeleteVolunteer, onToggleLeader }:
                                 />
                             </td>
                             <td className="py-3 px-4 text-center">
-                                <button
-                                    onClick={() => onDeleteVolunteer(volunteer.id)}
-                                    className="text-red-600 hover:text-red-800"
-                                    aria-label={`Excluir ${volunteer.name}`}
-                                >
-                                    <Trash2 size={20} />
-                                </button>
+                                <div className="flex justify-center gap-2">
+                                    {onEditVolunteer && (
+                                        <button
+                                            onClick={() => onEditVolunteer(volunteer)}
+                                            className="text-blue-600 hover:text-blue-800"
+                                            aria-label={`Editar ${volunteer.name}`}
+                                            title="Editar voluntário"
+                                        >
+                                            <Edit size={18} />
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => onDeleteVolunteer(volunteer.id)}
+                                        className="text-red-600 hover:text-red-800"
+                                        aria-label={`Excluir ${volunteer.name}`}
+                                        title="Excluir voluntário"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     ))}

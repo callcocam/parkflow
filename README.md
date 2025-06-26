@@ -36,7 +36,7 @@ Aqui vamos acompanhar o progresso do desenvolvimento, marcando as tarefas como p
 - ⏳ Suporte para modo offline.
 
 ### Fase 5: Configuração de Períodos (Concluída)
-- ✅ Criação de períodos para os dias 27, 28 e 29 de dezembro de 2024.
+- ✅ Criação de períodos para os dias 27, 28 e 29 de junho de 2025.
 - ✅ Configuração de turnos de manhã (07:00-12:00) e tarde (13:00-18:00).
 - ✅ Períodos criados para ambas as localidades (Portaria e Pátio).
 - ✅ Configuração especial de voluntários por turno:
@@ -49,3 +49,28 @@ Aqui vamos acompanhar o progresso do desenvolvimento, marcando as tarefas como p
 - ✅ Implementada barra de rolagem na seção "Voluntários Disponíveis" da página de alocação para melhor navegação.
 - ✅ Adicionado botão de remoção (X) nos voluntários alocados nos turnos com efeito hover e confirmação visual.
 - ✅ Exportação PDF compacta dos voluntários na página de Voluntários para compartilhamento no WhatsApp.
+
+### Fase 6: Interface Alternativa de Alocação (Concluída)
+- ✅ Criada nova página "Alocação Select" como alternativa ao drag-and-drop.
+- ✅ Interface com tabela listando todos os voluntários e select para escolher turnos.
+- ✅ Filtros por data, local e nome do voluntário para facilitar a busca.
+- ✅ Validações automáticas: capacidade máxima, um turno por voluntário por dia.
+- ✅ Estatísticas em tempo real: total de voluntários, turnos, alocados e líderes.
+- ✅ Visualização clara do turno atual de cada voluntário.
+- ✅ Exportação PDF melhorada incluindo informações de turno e local para cada voluntário.
+
+### Fase 7: Expansão da Base de Voluntários e Alocação Automática (Concluída)
+- ✅ Adicionados 2 novos voluntários à base de dados:
+  - **44. Egmar Antonio Rahmeier - Todos** (Sul)
+  - **45. Evonir Boeira - Todos** (Araricá)
+- ✅ Total de voluntários: **45 voluntários** cadastrados
+- ✅ Alocação automática implementada para turnos especiais do pátio:
+  - **27/06 (Sexta) 07:00-09:00**: "Sexta Manhã - Todos os voluntários"
+  - **27/06 (Sexta) 16:00-17:30**: "Sexta Tarde - Todos os voluntários"
+  - **28/06 (Sábado) 07:00-09:00**: "Sábado Manhã - Todos os voluntários"
+  - **28/06 (Sábado) 16:00-17:30**: "Sábado Tarde - Todos os voluntários"
+  - **29/06 (Domingo) 07:00-09:00**: "Domingo Manhã - Todos os voluntários"
+  - **29/06 (Domingo) 16:00-17:30**: "Domingo Tarde - Todos os voluntários"
+- ✅ Sistema executa alocação automática na inicialização da aplicação
+- ✅ Cada turno especial recebe o voluntário correspondente ao dia/período
+- ✅ Turnos especiais do pátio aparecem como "CHEIO" na interface de seleção

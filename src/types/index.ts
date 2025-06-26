@@ -6,6 +6,7 @@ export interface Volunteer {
   city: string;
   isTeamLeader?: boolean;
   imageUrl?: string;
+  unavailableShifts?: string[]; // Array de IDs dos turnos em que o voluntário não está disponível
 }
 
 export interface Shift {

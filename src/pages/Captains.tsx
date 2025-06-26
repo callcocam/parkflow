@@ -24,8 +24,8 @@ export function Captains() {
     }, {} as Record<string, { date: string, location: 'portaria' | 'patio', shifts: Shift[] }>);
 
     const handleSetCaptain = (date: string, location: 'portaria' | 'patio', volunteerId: string) => {
-        setCaptains(prev => {
-            const otherCaptains = prev.filter(c => !(c.date === date && c.location === location));
+        setCaptains((prev: any) => {
+            const otherCaptains = prev.filter((c: Captain) => !(c.date === date && c.location === location));
             if (volunteerId) { // Se um voluntário foi selecionado
                 return [...otherCaptains, { date, location, volunteerId }];
             }
